@@ -1,11 +1,15 @@
 package com.example.llmtest.service;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.llmtest.entity.DataInfo;
 
-import java.util.List;
+public interface DataInfoService extends IService<DataInfo> {
+    IPage<DataInfo> getDataInfoByPage(int pageNum);
+    IPage<DataInfo> getDataInfoByQuestionTypeByPage(int pageNum, String questionType);
+    DataInfo getDataInfoByDataId(Long dataId);
+    DataInfo getDataInfoByDisplayId(Long displayId);
+    boolean updateDataInfo(DataInfo dataInfo);
 
-public interface DataInfoService {
-    List<DataInfo> getAllDataInfos();
-
-    List<DataInfo> getDataInfosWithModelName();
+    boolean deleteDataInfoByDisplayId(Long displayId);
 }

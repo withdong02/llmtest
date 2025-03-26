@@ -7,10 +7,12 @@ spring:
   banner:
     location: classpath:banner.txt
     charset: utf-8
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
 
 mybatis-plus:
   configuration:
-    type-enums-package: com.example.llmtest,entity.enums
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     # 启用MyBatis-Plus的枚举处理
     default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
@@ -18,3 +20,7 @@ mybatis-plus:
     logic-delete-field: isDeleted
     logic-not-delete-value: 0
     logic-delete-value: 1
+springdoc:
+  api-docs:
+    enabled: true
+  path-provider: spring

@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.baomidou.mybatisplus.annotation.IEnum;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import lombok.Getter;
 
 import java.util.Arrays;
 
@@ -33,5 +32,14 @@ public enum QuestionTypeEnum implements IEnum<String> {
                 .filter(e -> e.value.equals(value))
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("无效值: " + value));
+    }
+
+    public static boolean contains(String value) {
+        for (QuestionTypeEnum type : QuestionTypeEnum.values()) {
+            if (type.value.equals(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
