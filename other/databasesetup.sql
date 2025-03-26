@@ -33,7 +33,7 @@ CREATE TABLE data_transformation (
                                      FOREIGN KEY (transformed_data_id) REFERENCES data_info(data_id)
 );
 
---创建环境记录表
+-- 创建环境记录表
 CREATE TABLE test_environment (
                                   env_id INT AUTO_INCREMENT PRIMARY KEY,
                                   os_name VARCHAR(50),
