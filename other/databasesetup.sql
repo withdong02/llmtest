@@ -9,9 +9,9 @@ CREATE TABLE data_info (
         data_id INT AUTO_INCREMENT PRIMARY KEY,
         question TEXT NOT NULL,
         answer TEXT NOT NULL,
-        question_type ENUM('choice', 'judgment', 'short_answer') NOT NULL COMMENT '选择题，判断题，简答题',
-        applicable_scenario VARCHAR(255) NOT NULL,
-        data_source ENUM('input', 'crawler', 'model_generation') NOT NULL COMMENT '手动输入，爬虫，模型生成',
+        question_type VARCHAR(255) NOT NULL COMMENT 'choice(选择题)，judgment(判断题)，short_answer(简答题)',
+        applicable_scenario VARCHAR(255) NOT NULL COMMENT 'performance(性能)，safety(安全)，reliable(可靠)，fair(公平)',
+        data_source VARCHAR(255) NOT NULL COMMENT 'input(手动输入)，crawler(爬虫)，model_generation(模型生成)',
         model_id INT null,
         entry_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         is_deleted TINYINT DEFAULT 0 COMMENT '0-未删除，1-已删除',
@@ -27,7 +27,8 @@ CREATE TABLE data_transformation (
         transformation_id INT AUTO_INCREMENT PRIMARY KEY,
         original_data_id INT NOT NULL,
         transformed_data_id INT NOT NULL,
-        transformation_type ENUM('rewrite', 'add_noise', 'reverse_polarity', 'complicate', 'substitute') COMMENT '改写，加噪音，反向极化，复杂化，替代',
+        transformation_description TEXT,
+        transformation_type VARCHAR(255) COMMENT 'rewrite(改写)，add_noise(加噪音)，reverse_polarity(反向极化)，complicate(复杂化)，substitute(替代)',
         FOREIGN KEY (original_data_id) REFERENCES data_info(data_id),
         FOREIGN KEY (transformed_data_id) REFERENCES data_info(data_id)
 );
@@ -35,9 +36,9 @@ CREATE TABLE data_transformation (
 -- 创建环境记录表
 CREATE TABLE test_environment (
         env_id INT AUTO_INCREMENT PRIMARY KEY,
-        os_name VARCHAR(50),
-        cpu_model VARCHAR(100),
-        gpu_info VARCHAR(100)
+        os_name VARCHAR(255),
+        cpu_model VARCHAR(255),
+        gpu_info VARCHAR(255)
 );
 
 -- 创建测试相关信息表
@@ -48,7 +49,7 @@ CREATE TABLE test_info (
         env_id INT NOT NULL,
         model_id INT NOT NULL,
         test_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        test_status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending' COMMENT '待处理，通过，拒绝',
+        test_status VARCHAR(255) DEFAULT 'pending' COMMENT 'pending(待处理)，approved(通过)，rejected(拒绝)',
         FOREIGN KEY (model_id) REFERENCES models(model_id),
         FOREIGN KEY (env_id) REFERENCES test_environment(env_id)
 );
