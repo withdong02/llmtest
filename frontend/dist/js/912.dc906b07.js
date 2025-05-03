@@ -1,0 +1,2 @@
+"use strict";(self["webpackChunkllmtest_frontend"]=self["webpackChunkllmtest_frontend"]||[]).push([[912],{912:(t,e,n)=>{n.r(e),n.d(e,{default:()=>a});var o=n(641);function s(t,e,n,s,u,l){return(0,o.uX)(),(0,o.CE)("div",null,[e[1]||(e[1]=(0,o.Lk)("h1",null,"大模型测试平台",-1)),(0,o.Lk)("button",{onClick:e[0]||(e[0]=(...t)=>l.goToQuestions&&l.goToQuestions(...t))},"查询题目")])}const u={name:"Home",methods:{goToQuestions(){this.$router.push("/questions")}}};var l=n(262);const r=(0,l.A)(u,[["render",s],["__scopeId","data-v-64a69506"]]),a=r}}]);
+//# sourceMappingURL=912.dc906b07.js.map

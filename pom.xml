@@ -57,11 +57,7 @@
             <version>3.5.11</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.alibaba</groupId>
-            <artifactId>fastjson</artifactId>
-            <version>2.0.29</version> <!-- 这里的版本号可根据实际情况调整 -->
-        </dependency>
+        
     </dependencies>
 
     <build>

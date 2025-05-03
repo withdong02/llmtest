@@ -22,14 +22,11 @@ public class DataInfoServiceImpl implements DataInfoService {
         return mapper.selectList(null);
     }
 
-    /*@Override
-    public List<DataInfo> getAllDataInfos() {
-        List<DataInfo> dataInfos = mapper.selectList(null);
-        dataInfos.forEach(dataInfo -> {
-            System.out.println("Question: " + dataInfo.getQuestion());
-            System.out.println("Answer: " + dataInfo.getAnswer());
-        });
-        return dataInfos;
-    }*/
+    @Override
+    public List<DataInfo> getDataInfosWithModelName() {
+        return mapper.selectDataInfosWithModelName();
+    }
+
+
 
 }

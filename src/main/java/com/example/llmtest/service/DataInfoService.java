@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface DataInfoService {
     List<DataInfo> getAllDataInfos();
+
+    List<DataInfo> getDataInfosWithModelName();
 }
