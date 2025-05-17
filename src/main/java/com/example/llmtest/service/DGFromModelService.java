@@ -1,6 +1,6 @@
 package com.example.llmtest.service;
 
-import com.example.llmtest.config.ETCMappingConfig;
+import com.example.llmtest.utils.ETCMappingUtil;
 import com.example.llmtest.entity.DataInfo;
 import com.example.llmtest.entity.enums.DataSourceEnum;
 import com.example.llmtest.entity.enums.DimensionEnum;
@@ -29,9 +29,9 @@ public class DGFromModelService {
     private final DataInfoMapper dataInfoMapper;
     private final MetricMapper  metricMapper;
     private final SubMetricMapper subMetricMapper;
-    private final ETCMappingConfig mappingConfig;
+    private final ETCMappingUtil mappingConfig;
 
-    public DGFromModelService(ETCMappingConfig mapping, DataInfoMapper dataInfoMapper,
+    public DGFromModelService(ETCMappingUtil mapping, DataInfoMapper dataInfoMapper,
                               MetricMapper metricMapper, SubMetricMapper subMetricMapper) {
         this.mappingConfig = mapping;
         this.dataInfoMapper = dataInfoMapper;

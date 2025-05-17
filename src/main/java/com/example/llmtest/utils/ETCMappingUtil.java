@@ -1,4 +1,4 @@
-package com.example.llmtest.config;
+package com.example.llmtest.utils;
 
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Getter
 @Configuration
-public class ETCMappingConfig {
+public class ETCMappingUtil {
 
     // 维度映射
     private final Map<String, String> dimensionMap = Map.of(

@@ -30,4 +30,13 @@ public enum DimensionEnum implements IEnum<String> {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("无效值: " + value));
     }
+
+    public static boolean contains(String value) {
+        for (DimensionEnum type : DimensionEnum.values()) {
+            if (type.value.equals(value)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

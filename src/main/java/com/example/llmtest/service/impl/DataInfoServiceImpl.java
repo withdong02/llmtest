@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.llmtest.entity.DataInfo;
 import com.example.llmtest.mapper.DataInfoMapper;
+import com.example.llmtest.mapper.MetricMapper;
+import com.example.llmtest.mapper.SubMetricMapper;
 import com.example.llmtest.service.DataInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,9 +20,15 @@ import static com.baomidou.mybatisplus.extension.toolkit.SimpleQuery.list;
 @Service
 public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> implements DataInfoService {
 
-    @Autowired
-    private DataInfoMapper dataInfoMapper;
+    private final DataInfoMapper dataInfoMapper;
+    private final MetricMapper metricMapper;
+    private final SubMetricMapper subMetricMapper;
 
+    public DataInfoServiceImpl(DataInfoMapper dataInfoMapper, MetricMapper metricMapper, SubMetricMapper subMetricMapper) {
+        this.dataInfoMapper = dataInfoMapper;
+        this.metricMapper = metricMapper;
+        this.subMetricMapper = subMetricMapper;
+    }
 
     @Override
     public IPage<DataInfo> getDataInfoByPage(int pageNum) {
@@ -30,12 +38,32 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
         //queryWrapper.lt("data_id",10);
         return this.page(page, queryWrapper);
     }
-
     @Override
     public IPage<DataInfo> getDataInfoByQuestionTypeByPage(int pageNum, String questionType) {
         Page<DataInfo> page = new Page<>(pageNum, 15);
         QueryWrapper<DataInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lt("data_id",150).eq("question_type", questionType);
+        queryWrapper.eq("question_type", questionType);
+        return this.page(page, queryWrapper);
+    }
+    @Override
+    public IPage<DataInfo> getDataInfoByPartContentByPage(int pageNum, String dimension, String metric) {
+        Long metricId = metricMapper.selectIdByName(metric);
+        Page<DataInfo> page = new Page<>(pageNum, 15);
+        QueryWrapper<DataInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("dimension", dimension)
+                    .eq("metric_id", metricId);
+        return this.page(page, queryWrapper);
+    }
+
+    @Override
+    public IPage<DataInfo> getDataInfoByAllContentByPage(int pageNum, String dimension, String metric, String subMetric) {
+        Long metricId = metricMapper.selectIdByName(metric);
+        Long subMetricId = subMetricMapper.selectIdByName(subMetric);
+        Page<DataInfo> page = new Page<>(pageNum, 15);
+        QueryWrapper<DataInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("dimension", dimension)
+                    .eq("metric_id", metricId)
+                    .eq("sub_metric_id", subMetricId);
         return this.page(page, queryWrapper);
     }
 

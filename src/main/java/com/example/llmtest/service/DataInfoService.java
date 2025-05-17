@@ -7,6 +7,8 @@ import com.example.llmtest.entity.DataInfo;
 public interface DataInfoService extends IService<DataInfo> {
     IPage<DataInfo> getDataInfoByPage(int pageNum);
     IPage<DataInfo> getDataInfoByQuestionTypeByPage(int pageNum, String questionType);
+    IPage<DataInfo> getDataInfoByPartContentByPage(int pageNum, String dimension, String metric);
+    IPage<DataInfo> getDataInfoByAllContentByPage(int pageNum, String dimension, String metric, String subMetric);
     DataInfo getDataInfoByDataId(Long dataId);
     DataInfo getDataInfoByDisplayId(Long displayId);
     boolean updateDataInfo(DataInfo dataInfo);
