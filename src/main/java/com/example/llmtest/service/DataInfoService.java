@@ -10,8 +10,7 @@ public interface DataInfoService extends IService<DataInfo> {
     IPage<DataInfo> getDataInfoByPartContentByPage(int pageNum, String dimension, String metric);
     IPage<DataInfo> getDataInfoByAllContentByPage(int pageNum, String dimension, String metric, String subMetric);
     DataInfo getDataInfoByDataId(Long dataId);
-    DataInfo getDataInfoByDisplayId(Long displayId);
     boolean updateDataInfo(DataInfo dataInfo);
 
-    boolean deleteDataInfoByDisplayId(Long displayId);
+    boolean deleteDataInfoByDataId(Long dataId);
 }

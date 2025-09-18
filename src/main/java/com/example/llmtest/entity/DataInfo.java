@@ -20,9 +20,6 @@ public class DataInfo {
     @TableField("data_id")
     private Long dataId;
 
-    @TableField("display_id")
-    private Long displayId;
-
     @TableField("model_id")//foreign key
     private Long modelId;
 
@@ -47,12 +44,10 @@ public class DataInfo {
 
     private QuestionTypeEnum questionType;
 
-    @Schema(description = "题目来源")
     private DataSourceEnum dataSource;
 
     private TransformationTypeEnum transformationType;
 
-    @TableField("transformation_description")
     private String transformationDescription;
 
     @TableField(value = "entry_date", fill = FieldFill.INSERT)

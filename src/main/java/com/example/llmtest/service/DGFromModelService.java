@@ -46,10 +46,12 @@ public class DGFromModelService {
         String dimensionZh = (String) input.get("dimension");
         String metricZh = (String) input.get("metric");
         String subMetricZh = (String) input.get("sub_metric");
+        requestBody.put("dimension", dimensionZh);
         if (subMetricZh == null || subMetricZh.isEmpty()) {
-            requestBody.put("domain", mappingConfig.getMetricMap().get(metricZh));
+            requestBody.put("metric", metricZh);
         } else {
-            requestBody.put("domain", mappingConfig.getSubMetricMap().get(subMetricZh));
+            requestBody.put("metric", metricZh);
+            requestBody.put("sub_metric", subMetricZh);
         }
         @SuppressWarnings("unchecked")
         List<String> questionTypes = (List<String>) input.get("questionType");
@@ -87,8 +89,8 @@ public class DGFromModelService {
                 dataInfo.setDimension(DimensionEnum.valueOf((mappingConfig.getDimensionMap().get(dimensionZh)).toUpperCase()));
                 dataInfo.setDataSource(DataSourceEnum.MODEL_GENERATION);
                 dataInfo.setModelId(1L);
-                dataInfo.setMetricId(metricMapper.selectIdByName(metricZh));
-                dataInfo.setSubMetricId(subMetricMapper.selectIdByName(subMetricZh));
+                dataInfo.setMetricId(metricMapper.selectIdByName(mappingConfig.getMetricMap().get(metricZh)));
+                dataInfo.setSubMetricId(subMetricMapper.selectIdByName(mappingConfig.getSubMetricMap().get(subMetricZh)));
                 dataInfo.setQuestionType(QuestionTypeEnum.valueOf(((String)item.get("type_index")).toUpperCase()));
                 dataInfo.setQuestion(String.valueOf(item.get("question")));
                 dataInfo.setAnswer(String.valueOf(item.get("answer")));

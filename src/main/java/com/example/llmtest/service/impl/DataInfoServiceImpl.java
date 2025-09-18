@@ -34,8 +34,7 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
     public IPage<DataInfo> getDataInfoByPage(int pageNum) {
         Page<DataInfo> page = new Page<>(pageNum, 15);
         QueryWrapper<DataInfo> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("is_deleted",0);
-        //queryWrapper.lt("data_id",10);
+        //queryWrapper.eq("is_deleted",0);
         return this.page(page, queryWrapper);
     }
     @Override
@@ -71,30 +70,13 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
     public DataInfo getDataInfoByDataId(Long dataId) {
         return dataInfoMapper.selectById(dataId);
     }
-
-    @Override
-    public DataInfo getDataInfoByDisplayId(Long displayId) {return dataInfoMapper.selectByDisplayId(displayId);}
-
     @Override
     public boolean updateDataInfo(DataInfo dataInfo) {
         return dataInfoMapper.updateById(dataInfo) > 0;
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public boolean deleteDataInfoByDisplayId(Long displayId) {
-        QueryWrapper<DataInfo> wrapper = new QueryWrapper<>();
-        wrapper.eq("display_id", displayId);
-        DataInfo dataInfo = dataInfoMapper.selectOne(wrapper);
-        if (dataInfo == null) {
-            return false;
-        }
-        UpdateWrapper<DataInfo> updateWrapper = new UpdateWrapper<>();updateWrapper.eq("display_id", displayId).eq("is_deleted",0).set("is_deleted", 1);int rows = dataInfoMapper.update(null, updateWrapper);
-        // 调整 displayId 连续性
-        if (rows > 0) {
-            dataInfoMapper.adjustDisplayIdsAfterDelete(displayId);
-        }
-        return rows > 0;
-
+    public boolean deleteDataInfoByDataId(Long dataId) {
+        return dataInfoMapper.deleteById(dataId) > 0;
     }
 }

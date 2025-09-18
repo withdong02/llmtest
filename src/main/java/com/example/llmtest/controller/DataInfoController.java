@@ -63,30 +63,30 @@ public class DataInfoController {
         Map<String, String> dimensionMap = mappingConfig.getDimensionMap();
         Map<String, String> metricMap = mappingConfig.getMetricMap();
         Map<String, String> subMetricMap = mappingConfig.getSubMetricMap();
-        if (!dimensionMap.containsKey(dimension)||  !metricMap.containsKey(metric)) {
+        if (!dimensionMap.containsValue(dimension)||  !metricMap.containsValue(metric)) {
             return R.error(ReturnCode.RC400.getCode(), "维度或指标不支持");
         }
-        if (subMetric != null && !subMetric.isEmpty() && !subMetricMap.containsKey(subMetric)) {
+        if (subMetric != null && !subMetric.isEmpty() && !subMetricMap.containsValue(subMetric)) {
             return R.error(ReturnCode.RC400.getCode(), "子指标不支持");
         }
         IPage<DataInfo> result;
-        String dimensionEn = dimensionMap.get(dimension);
-        String metricEn = metricMap.get(metric);
+        //String dimensionEn = dimensionMap.get(dimension);
+        //String metricEn = metricMap.get(metric);
         if (subMetric == null) {
-            result = dataInfoService.getDataInfoByPartContentByPage(pageNum, dimensionEn, metricEn);
+            result = dataInfoService.getDataInfoByPartContentByPage(pageNum, dimension, metric);
         } else {
-            String subMetricEn = subMetricMap.get(subMetric);
-            result = dataInfoService.getDataInfoByAllContentByPage(pageNum, dimensionEn, metricEn, subMetricEn);
+            //String subMetricEn = subMetricMap.get(subMetric);
+            result = dataInfoService.getDataInfoByAllContentByPage(pageNum, dimension, metric, subMetric);
         }
         return  R.success(result);
     }
 
     @Operation(summary = "根据题目displayId来查询某道题，有一个参数")
-    @GetMapping("/select/{displayId}")
-    public R<DataInfo> getDataInfoByDisplayId(
-            @Parameter(name = "displayId", description = "题目displayId")
-            @PathVariable Long displayId) {
-        DataInfo dataInfo = dataInfoService.getDataInfoByDisplayId(displayId);
+    @GetMapping("/select/{dataId}")
+    public R<DataInfo> getDataInfoByDataId(
+            @Parameter(name = "displayId", description = "题目dataId")
+            @PathVariable Long dataId) {
+        DataInfo dataInfo = dataInfoService.getDataInfoByDataId(dataId);
         if (dataInfo == null) {
             return R.error(ReturnCode.RC404.getCode(), ReturnCode.RC404.getMsg()); // 如果未找到数据，返回404
         }
@@ -99,14 +99,14 @@ public class DataInfoController {
         return dataInfoService.updateDataInfo(dataInfo);
     }
 
-    @Operation(summary = "根据题目displayId删除某道题")
-    @DeleteMapping("/delete/{displayId}")
-    public R<Boolean>deleteDataInfoByDisplayId(@PathVariable Long displayId) {
-        DataInfo dataInfo = dataInfoService.getDataInfoByDisplayId(displayId);
+    @Operation(summary = "根据题目dataId删除某道题")
+    @DeleteMapping("/delete/{dataId}")
+    public R<Boolean>deleteDataInfoByDataId(@PathVariable Long dataId) {
+        DataInfo dataInfo = dataInfoService.getDataInfoByDataId(dataId);
         if (dataInfo == null) {
             return R.error(ReturnCode.RC404.getCode(), ReturnCode.RC404.getMsg()); // 如果未找到数据，返回404
         } else  {
-            return R.success(dataInfoService.deleteDataInfoByDisplayId(displayId));
+            return R.success(dataInfoService.deleteDataInfoByDataId(dataId));
         }
     }
 }
