@@ -24,5 +24,4 @@ public class DGFromModelController {
     public String handleUserInput(@RequestBody Map<String, Object> input) {
         return dgFromModelService.processAndSave(input);
     }
-
 }

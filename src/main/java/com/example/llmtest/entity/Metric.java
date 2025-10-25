@@ -4,19 +4,21 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@TableName("metric")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Metric {
 
     @TableId(type = IdType.AUTO)
-    @TableField("metric_id")
     private Long metricId;
 
-    @TableField("metric_name")
     private String metricName;
 
-    @TableField("metric_description")
     private String metricDescription;
 }
