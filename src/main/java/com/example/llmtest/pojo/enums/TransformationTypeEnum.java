@@ -1,4 +1,4 @@
-package com.example.llmtest.entity.enums;
+package com.example.llmtest.pojo.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.baomidou.mybatisplus.annotation.IEnum;

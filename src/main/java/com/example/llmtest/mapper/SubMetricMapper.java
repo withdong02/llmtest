@@ -1,7 +1,7 @@
 package com.example.llmtest.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.example.llmtest.entity.SubMetric;
+import com.example.llmtest.pojo.entity.SubMetric;
 import org.apache.ibatis.annotations.Select;
 
 public interface SubMetricMapper extends BaseMapper<SubMetric> {

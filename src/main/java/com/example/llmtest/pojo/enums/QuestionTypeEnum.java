@@ -1,4 +1,4 @@
-package com.example.llmtest.entity.enums;
+package com.example.llmtest.pojo.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
 import com.baomidou.mybatisplus.annotation.IEnum;
@@ -8,23 +8,26 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
 
 
-public enum DimensionEnum implements IEnum<String> {
-    PERFORMANCE("performance"),
-    RELIABILITY("reliability"),
-    SAFETY("safety"),
-    FAIRNESS("fairness");
+public enum QuestionTypeEnum implements IEnum<String> {
+    CHOICE("choice"),
+    JUDGMENT("judgment"),
+    SHORT_ANSWER("short_answer"),
+    ONLY_QUESTION("only_question"),
+    COMPARE_QUESTION("compare_question");
 
     @EnumValue
     @JsonValue
     private final String value;
 
-    DimensionEnum(String value) {this.value = value;}
+    QuestionTypeEnum(String value) {
+        this.value = value;
+    }
     @Override
-    public String getValue() {return value;}
+    public String getValue() {return this.value;}
 
     //  JSON 反序列化时使用
     @JsonCreator
-    public static DimensionEnum forValue(String value) {
+    public static QuestionTypeEnum forValue(String value) {
         return Arrays.stream(values())
                 .filter(e -> e.value.equals(value))
                 .findFirst()
@@ -32,7 +35,7 @@ public enum DimensionEnum implements IEnum<String> {
     }
 
     public static boolean contains(String value) {
-        for (DimensionEnum type : DimensionEnum.values()) {
+        for (QuestionTypeEnum type : QuestionTypeEnum.values()) {
             if (type.value.equals(value)) {
                 return true;
             }

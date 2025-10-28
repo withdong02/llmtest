@@ -1,10 +1,10 @@
 package com.example.llmtest.service;
 
 import com.example.llmtest.utils.ETCMappingUtil;
-import com.example.llmtest.entity.DataInfo;
-import com.example.llmtest.entity.enums.DataSourceEnum;
-import com.example.llmtest.entity.enums.DimensionEnum;
-import com.example.llmtest.entity.enums.QuestionTypeEnum;
+import com.example.llmtest.pojo.entity.DataInfo;
+import com.example.llmtest.pojo.enums.DataSourceEnum;
+import com.example.llmtest.pojo.enums.DimensionEnum;
+import com.example.llmtest.pojo.enums.QuestionTypeEnum;
 import com.example.llmtest.mapper.DataInfoMapper;
 import com.example.llmtest.mapper.MetricMapper;
 import com.example.llmtest.mapper.SubMetricMapper;

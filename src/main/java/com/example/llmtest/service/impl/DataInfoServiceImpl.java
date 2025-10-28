@@ -1,18 +1,15 @@
 package com.example.llmtest.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.llmtest.entity.DataInfo;
+import com.example.llmtest.pojo.entity.DataInfo;
 import com.example.llmtest.mapper.DataInfoMapper;
 import com.example.llmtest.mapper.MetricMapper;
 import com.example.llmtest.mapper.SubMetricMapper;
 import com.example.llmtest.service.DataInfoService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import static com.baomidou.mybatisplus.extension.toolkit.SimpleQuery.list;
 

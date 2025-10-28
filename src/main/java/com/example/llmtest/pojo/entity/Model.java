@@ -1,9 +1,8 @@
-package com.example.llmtest.entity;
+package com.example.llmtest.pojo.entity;
+
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +12,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Metric {
+public class Model {
 
     @TableId(type = IdType.AUTO)
-    private Long metricId;
+    private Long modelId;
 
-    private String metricName;
+    private String modelName;
 
-    private String metricDescription;
+    private String modelDescription;
 }

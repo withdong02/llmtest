@@ -1,12 +1,11 @@
-package com.example.llmtest.entity;
+package com.example.llmtest.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.example.llmtest.entity.enums.DataSourceEnum;
-import com.example.llmtest.entity.enums.DimensionEnum;
-import com.example.llmtest.entity.enums.QuestionTypeEnum;
-import com.example.llmtest.entity.enums.TransformationTypeEnum;
+import com.example.llmtest.pojo.enums.DataSourceEnum;
+import com.example.llmtest.pojo.enums.DimensionEnum;
+import com.example.llmtest.pojo.enums.QuestionTypeEnum;
+import com.example.llmtest.pojo.enums.TransformationTypeEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
