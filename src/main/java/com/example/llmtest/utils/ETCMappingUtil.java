@@ -32,11 +32,11 @@ public class ETCMappingUtil {
     ));
     // 题型映射
     private final BiMap<String, Integer> questionTypeMap = HashBiMap.create(Map.of(
-            "选择题",0,
-            "判断题",1,
-            "简答题",2,
-            "仅问题",3,
-            "问题对比组",4
+            "choice",0,
+            "judgment",1,
+            "short_answer",2,
+            "only_question",3,
+            "compare_question",4
     ));
     // 构造函数中初始化 metricMap
     public ETCMappingUtil() {

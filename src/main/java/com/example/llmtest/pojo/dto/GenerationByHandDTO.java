@@ -5,10 +5,12 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class DataInfoPageQueryDTO implements Serializable {
-    private Long pageNum;
-    private String questionType;
+public class GenerationByHandDTO implements Serializable {
     private String dimension;
     private String metric;
     private String subMetric;
+    private String questionType;
+    private String question;
+    private String options;
+    private String answer;
 }
