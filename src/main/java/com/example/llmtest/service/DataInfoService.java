@@ -1,16 +1,33 @@
 package com.example.llmtest.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.llmtest.pojo.dto.DataInfoPageQueryDTO;
 import com.example.llmtest.pojo.entity.DataInfo;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 
 public interface DataInfoService extends IService<DataInfo> {
-    IPage<DataInfo> getDataInfoByPage(int pageNum);
-    IPage<DataInfo> getDataInfoByQuestionTypeByPage(int pageNum, String questionType);
-    IPage<DataInfo> getDataInfoByPartContentByPage(int pageNum, String dimension, String metric);
-    IPage<DataInfo> getDataInfoByAllContentByPage(int pageNum, String dimension, String metric, String subMetric);
+
+    /**
+     * 根据条件分页查询题目
+     *
+     * @param queryDTO
+     * @return
+     */
+    IPage<DataInfo> getDataInfoByConditions(DataInfoPageQueryDTO queryDTO);
+
+    /**
+     * 根据题目id查询题目
+     * @param dataId
+     * @return
+     */
     DataInfo getDataInfoByDataId(Long dataId);
+
+
     boolean updateDataInfo(DataInfo dataInfo);
 
     boolean deleteDataInfoByDataId(Long dataId);
+
+
 }

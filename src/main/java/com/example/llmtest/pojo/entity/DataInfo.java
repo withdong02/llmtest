@@ -11,13 +11,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DataInfo {
+public class DataInfo implements Serializable {
 
     @TableId(type = IdType.AUTO)
     private Long dataId;
@@ -58,4 +59,5 @@ public class DataInfo {
     private Integer isDeleted;
 
     private Integer isTransformed;
+
 }
