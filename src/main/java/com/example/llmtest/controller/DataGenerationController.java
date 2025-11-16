@@ -31,7 +31,7 @@ public class DataGenerationController {
     @PostMapping("/model")
     public R<List<DataInfo>> model(@RequestBody GenerationByModelDTO dto) {
         log.info("dto参数为{}", dto);
-        List<DataInfo> dataInfo = dataGenerationService.generationByModel(dto);
+        List<DataInfo> dataInfo = dataGenerationService.generateByModel(dto);
         return R.success(dataInfo);
     }
 
@@ -39,7 +39,7 @@ public class DataGenerationController {
     @PostMapping("/hand")
     public R<String> hand(@RequestBody GenerationByHandDTO dto) {
         log.info("dto参数为{}", dto.toString());
-        Boolean returnVal = dataGenerationService.generationByHand(dto);
+        Boolean returnVal = dataGenerationService.generateByHand(dto);
         if (returnVal) {
             return R.success("成功录入");
         } else{

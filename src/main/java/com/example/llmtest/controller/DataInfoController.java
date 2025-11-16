@@ -48,7 +48,7 @@ public class DataInfoController {
     }
 
     @Operation(summary = "对题目编辑操作，待定")
-    @PutMapping
+    @PutMapping("/update")
     public boolean updateDataInfo(@RequestBody DataInfo dataInfo) {
         return dataInfoService.updateDataInfo(dataInfo);
     }

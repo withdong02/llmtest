@@ -13,12 +13,12 @@ public interface DataGenerationService extends IService<DataInfo> {
      * @param dto
      * @return
      */
-    List<DataInfo> generationByModel(GenerationByModelDTO dto);
+    List<DataInfo> generateByModel(GenerationByModelDTO dto);
 
     /**
      * 手动录入
      * @param dto
      * @return
      */
-    Boolean generationByHand(GenerationByHandDTO dto);
+    Boolean generateByHand(GenerationByHandDTO dto);
 }

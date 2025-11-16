@@ -40,8 +40,6 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
     private final SubMetricMapper subMetricMapper;
     private final ModelMapper modelMapper;
 
-
-
     public DataGenerationServiceImpl(RestTemplate restTemplate, ETCMappingUtil mappingUtil,
                                      MetricMapper metricMapper,
                                      SubMetricMapper subMetricMapper, ModelMapper modelMapper) {
@@ -59,7 +57,7 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
      * @return
      */
     @Transactional
-    public List<DataInfo> generationByModel(GenerationByModelDTO dto) {
+    public List<DataInfo> generateByModel(GenerationByModelDTO dto) {
         if ((dto.getMetric() == null || dto.getMetric().isEmpty())
                 && (dto.getSubMetric() != null && !dto.getSubMetric().isEmpty())) {
             throw new BusinessException(ReturnCode.RC400.getCode(), "子指标存在，指标不存在");
@@ -150,7 +148,7 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
      * @return
      */
     @Transactional
-    public Boolean generationByHand(GenerationByHandDTO dto) {
+    public Boolean generateByHand(GenerationByHandDTO dto) {
         String options = null;
         if (dto.getOptions() != null && !dto.getOptions().isEmpty()) options = dto.getOptions();
         String subMetric = null;
