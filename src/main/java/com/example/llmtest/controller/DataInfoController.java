@@ -30,9 +30,7 @@ public class DataInfoController {
 
     @Operation(summary = "根据条件分页查询题目")
     @GetMapping("/select/pages")
-    public R<IPage<DataInfo>> getDataInfoByConditionsByPage(
-            @Parameter(description = "查询条件")
-            DataInfoPageQueryDTO queryDTO) {
+    public R<IPage<DataInfo>> getDataInfoByConditionsByPage(DataInfoPageQueryDTO queryDTO) {
         IPage<DataInfo> result = dataInfoService.getDataInfoByConditions(queryDTO);
         return R.success(result);
     }

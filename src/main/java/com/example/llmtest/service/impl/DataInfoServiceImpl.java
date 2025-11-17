@@ -77,7 +77,15 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
         // 正常查询
 
         long pageNum = queryDTO.getPageNum() == null ? 1 : queryDTO.getPageNum();
-        Page<DataInfo> page = new Page<>(pageNum, 15);
+        long pageSize = 15;
+        /*if (totalCount != null && totalCount > 0) {
+            // 检查请求的页是否超出了基于totalCount的总页数
+            long maxPage = (totalCount + pageSize - 1) / pageSize; // 向上取整计算最大页码
+            if (pageNum > maxPage) {
+                pageNum = maxPage > 0 ? maxPage : 1; // 确保页码至少为1
+            }
+        }*/
+        Page<DataInfo> page = new Page<>(pageNum, pageSize);
         QueryWrapper<DataInfo> queryWrapper = new QueryWrapper<>();
         if (queryDTO.getQuestionType() != null && !queryDTO.getQuestionType().isEmpty()) {
             queryWrapper.eq("question_type", queryDTO.getQuestionType());

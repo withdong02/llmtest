@@ -3,6 +3,7 @@ package com.example.llmtest.service.impl;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.llmtest.mapper.DataInfoMapper;
+import com.example.llmtest.pojo.dto.EvolutionDTO;
 import com.example.llmtest.pojo.entity.DataInfo;
 import com.example.llmtest.pojo.enums.TransformationTypeEnum;
 import com.example.llmtest.service.DataEvolutionService;
@@ -36,12 +37,13 @@ public class DataEvolutionServiceImpl extends ServiceImpl<DataInfoMapper, DataIn
 
     /**
      * 题目变形
-     * @param dataIds
-     * @param transformationType
+     * @param dto
      * @return
      */
     @Override
-    public List<DataInfo> evolveByModel(List<Long> dataIds, String transformationType) {
+    public List<DataInfo> evolveByModel(EvolutionDTO dto) {
+        List<Long> dataIds = dto.getDataIds();
+        String transformationType = dto.getTransformationType();
         List<DataInfo> returnVal = new ArrayList<>();
         for (Long dataId : dataIds) {
             DataInfo dataInfo = baseMapper.selectById(dataId);
@@ -71,7 +73,7 @@ public class DataEvolutionServiceImpl extends ServiceImpl<DataInfoMapper, DataIn
 
             // 发送请求
             ResponseEntity<String> response = restTemplate.postForEntity(FLASK_URL, requestEntity, String.class);
-            System.out.println(response);
+            System.out.println("响应" + response);
             List<Map<String, Object>> allResult;
             DataInfo newData;
             try {
