@@ -1,10 +1,7 @@
 package com.example.llmtest.pojo.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.example.llmtest.pojo.enums.DataSourceEnum;
 import com.example.llmtest.pojo.enums.DimensionEnum;
-import com.example.llmtest.pojo.enums.QuestionTypeEnum;
-import com.example.llmtest.pojo.enums.TransformationTypeEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,36 +15,29 @@ import java.sql.Timestamp;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DataInfo implements Serializable {
-
+public class TestInfo implements Serializable {
     @TableId(type = IdType.AUTO)
-    private Long dataId;
-
-    //逻辑外键
+    private Long testId;
+    private String name;
     private Long modelId;
-    //逻辑外键
-    private Long metricId;
-
-    private String question;
-
-    private String options;
-
-    private String answer;
-
     private DimensionEnum dimension;
-
+    private Long metricId;
     @TableField("sub_metric_id")
     private Long subMetricId;
 
-    private QuestionTypeEnum questionType;
+    private String os;
+    private String cpu;
+    private String gpu;
 
-    private DataSourceEnum dataSource;
+    private Long count;
+    private String testDescription;
 
-    private TransformationTypeEnum transformationType;
+    private String status;
+    private Double score;
+    private String resultDescription;
 
-    private String transformationDescription;
-
-    private Long originalDataId;
+    @TableLogic
+    private Integer isDeleted;
 
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -56,10 +46,4 @@ public class DataInfo implements Serializable {
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
-
-    @TableLogic
-    private Integer isDeleted;
-
-    private Integer isTransformed;
-
 }

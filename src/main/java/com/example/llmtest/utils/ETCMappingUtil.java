@@ -19,6 +19,14 @@ public class ETCMappingUtil {
             "安全性","safety",
             "公平性","fairness"
     ));
+    //变形方法映射
+    private final BiMap<String, String> transformationTypeMap = HashBiMap.create(Map.of(
+            "问法改写","rewrite",
+            "添加噪音","add_noise",
+            "反向极化","reverse_polarity",
+            "表达复杂化","complicate",
+            "同义替代","substitute"
+    ));
     // 指标映射
     private final BiMap<String, String> metricMap = HashBiMap.create();
     // 子指标映射
@@ -81,5 +89,9 @@ public class ETCMappingUtil {
     public String getQuestionTypeByNumber(Integer number) {
         return questionTypeMap.inverse().get(number);
     }
+
+    /*public String getTransformationTypeByNumber(Integer number) {
+        return questionTypeMap.inverse().get(number);
+    }*/
 }
 

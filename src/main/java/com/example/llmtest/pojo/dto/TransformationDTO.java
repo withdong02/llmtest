@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class EvolutionDTO {
+public class TransformationDTO {
     private List<Long> dataIds;
     private String transformationType;
 }
