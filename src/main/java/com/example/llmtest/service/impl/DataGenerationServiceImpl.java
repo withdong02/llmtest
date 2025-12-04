@@ -7,7 +7,7 @@ import com.example.llmtest.mapper.ModelMapper;
 import com.example.llmtest.pojo.dto.GenerationByHandDTO;
 import com.example.llmtest.pojo.dto.GenerationByModelDTO;
 import com.example.llmtest.service.DataGenerationService;
-import com.example.llmtest.utils.ETCMappingUtil;
+import com.example.llmtest.utils.CustomUtil;
 import com.example.llmtest.pojo.entity.DataInfo;
 import com.example.llmtest.pojo.enums.DataSourceEnum;
 import com.example.llmtest.pojo.enums.DimensionEnum;
@@ -35,16 +35,16 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
     private static final String FLASK_URL = "https://www.u659522.nyat.app:26249/generate";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RestTemplate restTemplate;
-    private final ETCMappingUtil mappingUtil;
+    private final CustomUtil customUtil;
     private final MetricMapper  metricMapper;
     private final SubMetricMapper subMetricMapper;
     private final ModelMapper modelMapper;
 
-    public DataGenerationServiceImpl(RestTemplate restTemplate, ETCMappingUtil mappingUtil,
+    public DataGenerationServiceImpl(RestTemplate restTemplate, CustomUtil customUtil,
                                      MetricMapper metricMapper,
                                      SubMetricMapper subMetricMapper, ModelMapper modelMapper) {
         this.restTemplate = restTemplate;
-        this.mappingUtil = mappingUtil;
+        this.customUtil = customUtil;
         this.metricMapper = metricMapper;
         this.subMetricMapper = subMetricMapper;
         this.modelMapper = modelMapper;
@@ -74,7 +74,7 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
         int[] weight = new int[5];
         if (questionType != null) {
             for (String type : questionType) {
-                Integer index = mappingUtil.getQuestionTypeMap().get(type);
+                Integer index = customUtil.getQuestionTypeMap().get(type);
                 if (index != null && index >= 0 && index < 5) {
                     weight[index] = 1;
                 }
@@ -101,10 +101,7 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
         List<DataInfo> returnVal = new ArrayList<>();
         try {
             // 解析响应
-            //String innerJson = objectMapper.readValue(response.getBody(), String.class);
             result = objectMapper.readValue(response.getBody(), new TypeReference<>() {});
-            /*String str = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
-            System.out.println(str);*/
             // 插入数据库
             for (Map<String, Object> item : result) {
                 DataInfo dataInfo = DataInfo.builder()
@@ -120,14 +117,8 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
                 //只有选择题才有选项
                 if (item.containsKey("options")) {
                     Object optionsObj = item.get("options");
-                    if (optionsObj instanceof List<?>) {
-                        List<?> optionsList = (List<?>) optionsObj;
-                        String optionsStr = optionsList.stream()
-                                .map(Object::toString)
-                                .map(option -> option.replaceFirst(": ", ":")) // 去掉冒号后的第一个空格
-                                .collect(Collectors.joining("|"));
-                        dataInfo.setOptions(optionsStr);
-                    }
+                    String options = customUtil.parseArrayToString(optionsObj);
+                    dataInfo.setOptions(options);
                 } else {
                     dataInfo.setOptions(null);
                 }

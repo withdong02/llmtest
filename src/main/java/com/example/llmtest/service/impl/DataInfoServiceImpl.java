@@ -13,7 +13,7 @@ import com.example.llmtest.mapper.MetricMapper;
 import com.example.llmtest.mapper.SubMetricMapper;
 import com.example.llmtest.pojo.enums.QuestionTypeEnum;
 import com.example.llmtest.service.DataInfoService;
-import com.example.llmtest.utils.ETCMappingUtil;
+import com.example.llmtest.utils.CustomUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -27,14 +27,14 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
     private final DataInfoMapper dataInfoMapper;
     private final MetricMapper metricMapper;
     private final SubMetricMapper subMetricMapper;
-    private final ETCMappingUtil mappingUtil;
+    private final CustomUtil customUtil;
 
     public DataInfoServiceImpl(DataInfoMapper dataInfoMapper, MetricMapper metricMapper,
-                               SubMetricMapper subMetricMapper, ETCMappingUtil mappingUtil) {
+                               SubMetricMapper subMetricMapper, CustomUtil customUtil) {
         this.dataInfoMapper = dataInfoMapper;
         this.metricMapper = metricMapper;
         this.subMetricMapper = subMetricMapper;
-        this.mappingUtil = mappingUtil;
+        this.customUtil = customUtil;
     }
 
     /**
@@ -55,9 +55,9 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
                 throw new BusinessException(ReturnCode.RC400.getCode(), "题型不存在");
             }
         }
-        Map<String, String> dimensionMap = mappingUtil.getDimensionMap();
-        Map<String, String> metricMap = mappingUtil.getMetricMap();
-        Map<String, String> subMetricMap = mappingUtil.getSubMetricMap();
+        Map<String, String> dimensionMap = customUtil.getDimensionMap();
+        Map<String, String> metricMap = customUtil.getMetricMap();
+        Map<String, String> subMetricMap = customUtil.getSubMetricMap();
         if (queryDTO.getDimension() != null && !queryDTO.getDimension().isEmpty()) {
             if (!dimensionMap.containsValue(queryDTO.getDimension())) {
                 throw new BusinessException(ReturnCode.RC400.getCode(), "维度不存在");

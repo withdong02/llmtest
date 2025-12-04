@@ -10,7 +10,7 @@ import com.example.llmtest.pojo.entity.DataInfo;
 import com.example.llmtest.pojo.enums.DataSourceEnum;
 import com.example.llmtest.pojo.enums.TransformationTypeEnum;
 import com.example.llmtest.service.DataTransformationService;
-import com.example.llmtest.utils.ETCMappingUtil;
+import com.example.llmtest.utils.CustomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,9 +26,6 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,13 +35,16 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
     private static final String FLASK_URL = "https://www.u659522.nyat.app:26249/evolve";
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final RestTemplate restTemplate;
-    private final ETCMappingUtil mappingUtil;
+    private final CustomUtil customUtil;
     private final ModelMapper modelMapper;
+    private final DataInfoMapper dataInfoMapper;
 
-    public DataTransformationServiceImpl(RestTemplate restTemplate, ETCMappingUtil mappingUtil, ModelMapper modelMapper) {
+    public DataTransformationServiceImpl(RestTemplate restTemplate, CustomUtil customUtil,
+                                         ModelMapper modelMapper, DataInfoMapper dataInfoMapper) {
         this.restTemplate = restTemplate;
-        this.mappingUtil = mappingUtil;
+        this.customUtil = customUtil;
         this.modelMapper = modelMapper;
+        this.dataInfoMapper = dataInfoMapper;
     }
 
     /**
@@ -60,7 +60,7 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
         List<Long> dataIds = dto.getDataIds();
         String transformationType = dto.getTransformationType();
 
-        if (!mappingUtil.getTransformationTypeMap().containsValue(transformationType)) {
+        if (!customUtil.getTransformationTypeMap().containsValue(transformationType)) {
             throw new BusinessException(ReturnCode.RC400.getCode(), "变形方法不存在");
         }
 
@@ -71,20 +71,16 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
         // 构造批量请求体
         for (int i = 0; i < dataIds.size(); i++) {
             Long dataId = dataIds.get(i);
-            DataInfo dataInfo = baseMapper.selectById(dataId);
+            DataInfo dataInfo = dataInfoMapper.selectById(dataId);
             originalDataList.add(dataInfo);
 
             HashMap<String, Object> content = new HashMap<>();
             content.put("rowIdx", i);
             content.put("question", dataInfo.getQuestion());
-            if (dataInfo.getOptions() != null && !dataInfo.getOptions().isEmpty()) {
-                String optionsString = dataInfo.getOptions();
-                String[] options = optionsString.split("\\|");
-                for (int j = 0; j < options.length; j++) {
-                    options[j] = options[j].replaceFirst(":", ": ");
-                }
-                content.put("options", options);
-            }
+            String optionsString = dataInfo.getOptions();
+            String[] options = customUtil.parseStringToArray(optionsString);
+            content.put("options", options);
+
             content.put("answer", dataInfo.getAnswer());
             content.put("type_index", dataInfo.getQuestionType().getValue());
 
@@ -123,14 +119,8 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
                 newData.setAnswer(String.valueOf(result.get("answer")));
                 if (result.containsKey("options")) {
                     Object optionsObj = result.get("options");
-                    if (optionsObj instanceof List<?>) {
-                        List<?> optionsList = (List<?>) optionsObj;
-                        String optionsStr = optionsList.stream()
-                                .map(Object::toString)
-                                .map(option -> option.replaceFirst(": ", ":"))
-                                .collect(Collectors.joining("|"));
-                        newData.setOptions(optionsStr);
-                    }
+                    String optionsString = customUtil.parseArrayToString(optionsObj);
+                    newData.setOptions(optionsString);
                 } else {
                     newData.setOptions(null);
                 }
@@ -139,9 +129,8 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
                 newData.setIsTransformed(1);
                 newData.setTransformationType(TransformationTypeEnum.valueOf(transformationType.toUpperCase()));
                 newData.setTransformationDescription(String.valueOf(result.get("process")));
-                newData.setOriginalDataId(originalData.getDataId());
 
-                baseMapper.insert(newData);
+                dataInfoMapper.insert(newData);
                 resultDataList.add(newData);
             }
 

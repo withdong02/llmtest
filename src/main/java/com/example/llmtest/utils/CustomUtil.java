@@ -5,12 +5,13 @@ import com.google.common.collect.HashBiMap;
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Getter
 @Configuration
-public class ETCMappingUtil {
+public class CustomUtil {
 
     // 维度映射
     private final BiMap<String, String> dimensionMap = HashBiMap.create(Map.of(
@@ -46,8 +47,18 @@ public class ETCMappingUtil {
             "only_question",3,
             "compare_question",4
     ));
+
+    // 测试指标映射（性能分为三个指标）
+    private final BiMap<String, String> TestMap = HashBiMap.create(Map.of(
+            "系统响应效率", "system_responsiveness",
+            "复杂推理能力", "complex_reasoning_skill",
+            "长文本理解能力", "long_text_comprehension_skill",
+            "可靠性","reliability",
+            "安全性","safety",
+            "公平性","fairness"
+    ));
     // 构造函数中初始化 metricMap
-    public ETCMappingUtil() {
+    public CustomUtil() {
         metricMap.put("系统响应效率", "system_responsiveness");
         metricMap.put("复杂推理能力", "complex_reasoning_skill");
         metricMap.put("长文本理解能力", "long_text_comprehension_skill");
@@ -73,25 +84,29 @@ public class ETCMappingUtil {
         metricMap.put("政治", "politics");
     }
 
-    // 提供反向查找的方法
-    public String getDimensionByEnglish(String english) {
-        return dimensionMap.inverse().get(english);
+    public String[] parseStringToArray(String optionsString) {
+        if (optionsString == null || optionsString.isEmpty()) {
+            return null;
+        }
+        String[] options = optionsString.split("\\|");
+        for (int i = 0; i < options.length; i++) {
+            options[i] = options[i].replaceFirst(":", ": ");
+        }
+        return options;
     }
 
-    public String getMetricByEnglish(String english) {
-        return metricMap.inverse().get(english);
+    public String parseArrayToString(Object optionsObj) {
+        if (optionsObj == null) return null;
+        if (optionsObj instanceof String) return (String) optionsObj;
+        if (optionsObj instanceof List<?> optionsList) {
+            if (optionsList.isEmpty()) return null;
+            return optionsList.stream()
+                    .map(Object::toString)
+                    .map(option -> option.replaceFirst(": ", ":"))
+                    .collect(Collectors.joining("|"));
+        }
+        return null;
     }
 
-    public String getSubMetricByEnglish(String english) {
-        return subMetricMap.inverse().get(english);
-    }
-
-    public String getQuestionTypeByNumber(Integer number) {
-        return questionTypeMap.inverse().get(number);
-    }
-
-    /*public String getTransformationTypeByNumber(Integer number) {
-        return questionTypeMap.inverse().get(number);
-    }*/
 }
 

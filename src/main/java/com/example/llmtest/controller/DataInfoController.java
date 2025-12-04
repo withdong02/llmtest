@@ -3,19 +3,13 @@ package com.example.llmtest.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.llmtest.pojo.dto.DataInfoPageQueryDTO;
-import com.example.llmtest.pojo.vo.DataInfoVO;
-import com.example.llmtest.utils.ETCMappingUtil;
 import com.example.llmtest.pojo.entity.DataInfo;
-import com.example.llmtest.pojo.enums.QuestionTypeEnum;
 import com.example.llmtest.exceptionhandler.R;
 import com.example.llmtest.exceptionhandler.ReturnCode;
 import com.example.llmtest.service.DataInfoService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @Tag(name = "DataInfoController", description = "有关题库的所有操作")
 @RestController
