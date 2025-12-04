@@ -15,6 +15,7 @@ import com.example.llmtest.utils.CustomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -60,12 +61,17 @@ public class PerformanceTestServiceImpl extends ServiceImpl<TestInfoMapper, Test
     public TestVO metricOneTest(TestDTO dto) {
         String dimension = dto.getDimension();
         String metric = dto.getMetric();
-        if (dimension.isEmpty() || !customUtil.getDimensionMap().containsValue(dimension)) {
-            throw new BusinessException(ReturnCode.RC400.getCode(), "维度不存在");
+        if (StringUtils.isNotBlank(dimension)) {
+            if (!customUtil.getDimensionMap().containsValue(dimension)) {
+                throw new BusinessException(ReturnCode.RC400.getCode(), "维度不存在");
+            }
         }
-        if (!customUtil.getMetricMap().containsValue(metric)) {
-            throw new BusinessException(ReturnCode.RC400.getCode(), "指标不存在");
+        if (StringUtils.isNotBlank(metric)) {
+            if (!customUtil.getMetricMap().containsValue(metric)) {
+                throw new BusinessException(ReturnCode.RC400.getCode(), "指标不存在");
+            }
         }
+
 
         //构建请求体
         HashMap<String, Object> requestBody = new HashMap<>();

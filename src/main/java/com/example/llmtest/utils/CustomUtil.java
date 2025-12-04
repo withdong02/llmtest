@@ -4,13 +4,14 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Getter
-@Configuration
+@Component
 public class CustomUtil {
 
     // 维度映射

@@ -14,11 +14,11 @@ import com.example.llmtest.mapper.SubMetricMapper;
 import com.example.llmtest.pojo.enums.QuestionTypeEnum;
 import com.example.llmtest.service.DataInfoService;
 import com.example.llmtest.utils.CustomUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
-import static com.baomidou.mybatisplus.extension.toolkit.SimpleQuery.list;
 
 
 @Service
@@ -45,12 +45,12 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
     @Override
     public IPage<DataInfo> getDataInfoByConditions(DataInfoPageQueryDTO queryDTO) {
 
-        if (queryDTO.getSubMetric() != null && !queryDTO.getSubMetric().isEmpty()) {
-            if (queryDTO.getMetric() == null || queryDTO.getMetric().isEmpty()) {
-                throw new BusinessException(ReturnCode.RC400.getCode(), "当指定子指标时，指标不能为空");
+        if (StringUtils.isNotBlank(queryDTO.getSubMetric())) {
+            if (StringUtils.isBlank(queryDTO.getMetric())) {
+                throw new BusinessException(ReturnCode.RC400.getCode(), "指定子指标时，指标不能为空");
             }
         }
-        if (queryDTO.getQuestionType() != null && !queryDTO.getQuestionType().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getQuestionType())) {
             if (!QuestionTypeEnum.contains(queryDTO.getQuestionType())) {
                 throw new BusinessException(ReturnCode.RC400.getCode(), "题型不存在");
             }
@@ -58,17 +58,17 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
         Map<String, String> dimensionMap = customUtil.getDimensionMap();
         Map<String, String> metricMap = customUtil.getMetricMap();
         Map<String, String> subMetricMap = customUtil.getSubMetricMap();
-        if (queryDTO.getDimension() != null && !queryDTO.getDimension().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getDimension())) {
             if (!dimensionMap.containsValue(queryDTO.getDimension())) {
                 throw new BusinessException(ReturnCode.RC400.getCode(), "维度不存在");
             }
         }
-        if (queryDTO.getMetric() != null && !queryDTO.getMetric().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getMetric())) {
             if (!metricMap.containsValue(queryDTO.getMetric())) {
                 throw new BusinessException(ReturnCode.RC400.getCode(), "指标不存在");
             }
         }
-        if (queryDTO.getSubMetric() != null && !queryDTO.getSubMetric().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getSubMetric())) {
             if (!subMetricMap.containsValue(queryDTO.getSubMetric())) {
                 throw new BusinessException(ReturnCode.RC400.getCode(), "子指标不存在");
             }
@@ -81,19 +81,19 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
 
         Page<DataInfo> page = new Page<>(pageNum, pageSize);
         QueryWrapper<DataInfo> queryWrapper = new QueryWrapper<>();
-        if (queryDTO.getQuestionType() != null && !queryDTO.getQuestionType().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getQuestionType())) {
             queryWrapper.eq("question_type", queryDTO.getQuestionType());
         }
-        if (queryDTO.getDimension() != null && !queryDTO.getDimension().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getDimension())) {
             queryWrapper.eq("dimension", queryDTO.getDimension());
         }
-        if (queryDTO.getMetric() != null && !queryDTO.getMetric().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getMetric())) {
             Long metricId = metricMapper.selectIdByName(queryDTO.getMetric());
             if (metricId != null) {
                 queryWrapper.eq("metric_id", metricId);
             }
         }
-        if (queryDTO.getSubMetric() != null && !queryDTO.getSubMetric().isEmpty()) {
+        if (StringUtils.isNotBlank(queryDTO.getSubMetric())) {
             Long subMetricId = subMetricMapper.selectIdByName(queryDTO.getSubMetric());
             if (subMetricId != null) {
                 queryWrapper.eq("sub_metric_id", subMetricId);

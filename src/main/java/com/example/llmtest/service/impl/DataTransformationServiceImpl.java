@@ -14,6 +14,7 @@ import com.example.llmtest.utils.CustomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.common.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpEntity;
@@ -26,7 +27,6 @@ import org.springframework.web.client.RestTemplate;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -59,9 +59,10 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
     private List<DataInfo> transformBatch(TransformationDTO dto) {
         List<Long> dataIds = dto.getDataIds();
         String transformationType = dto.getTransformationType();
-
-        if (!customUtil.getTransformationTypeMap().containsValue(transformationType)) {
-            throw new BusinessException(ReturnCode.RC400.getCode(), "变形方法不存在");
+        if (StringUtils.isNotBlank(transformationType)) {
+            if (!customUtil.getTransformationTypeMap().containsValue(transformationType)) {
+                throw new BusinessException(ReturnCode.RC400.getCode(), "变形方法不存在");
+            }
         }
 
 

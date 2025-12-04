@@ -18,6 +18,7 @@ import com.example.llmtest.mapper.SubMetricMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +28,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
 public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> implements DataGenerationService {
@@ -58,9 +58,10 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
      */
     @Transactional
     public List<DataInfo> generateByModel(GenerationByModelDTO dto) {
-        if ((dto.getMetric() == null || dto.getMetric().isEmpty())
-                && (dto.getSubMetric() != null && !dto.getSubMetric().isEmpty())) {
-            throw new BusinessException(ReturnCode.RC400.getCode(), "子指标存在，指标不存在");
+        if (StringUtils.isNotBlank(dto.getSubMetric())) {
+            if (StringUtils.isBlank(dto.getMetric())) {
+                throw new BusinessException(ReturnCode.RC400.getCode(), "指定子指标时，指标不能为空");
+            }
         }
         // 构建请求体
         Map<String, Object> requestBody = new HashMap<>();
@@ -82,7 +83,7 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
         }
         requestBody.put("weights_set", weight);
         String example = "";
-        if (dto.getExample() != null && !dto.getExample().isEmpty()) {
+        if (StringUtils.isNotBlank(dto.getExample())) {
             example = dto.getExample();
         }
         requestBody.put("example", example);
@@ -141,9 +142,9 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
     @Transactional
     public Boolean generateByHand(GenerationByHandDTO dto) {
         String options = null;
-        if (dto.getOptions() != null && !dto.getOptions().isEmpty()) options = dto.getOptions();
+        if (StringUtils.isNotBlank(dto.getOptions())) options = dto.getOptions();
         String subMetric = null;
-        if (dto.getSubMetric() != null && !dto.getSubMetric().isEmpty()) subMetric = dto.getSubMetric();
+        if (StringUtils.isNotBlank(dto.getSubMetric())) subMetric = dto.getSubMetric();
         DataInfo dataInfo = DataInfo.builder()
                 .question(dto.getQuestion())
                 .options(options)
