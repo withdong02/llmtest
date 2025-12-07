@@ -1,5 +1,7 @@
 package com.example.llmtest.utils;
 
+import com.example.llmtest.pojo.entity.DataInfo;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import lombok.Getter;
@@ -109,5 +111,21 @@ public class CustomUtil {
         return null;
     }
 
+    /**
+     * 将DataInfo转换为DataInfoVO
+     * @param dataInfo
+     * @return
+     */
+    public DataInfoVO convertToVO(DataInfo dataInfo) {
+        return DataInfoVO.builder()
+                .dataId(dataInfo.getDataId())
+                .question(dataInfo.getQuestion())
+                .options(dataInfo.getOptions())
+                .answer(dataInfo.getAnswer())
+                .questionType(dataInfo.getQuestionType())
+                .dataSource(dataInfo.getDataSource())
+                .updateTime(dataInfo.getUpdateTime())
+                .build();
+    }
 }
 
