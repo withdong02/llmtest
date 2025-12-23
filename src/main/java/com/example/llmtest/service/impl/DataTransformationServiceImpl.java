@@ -9,6 +9,7 @@ import com.example.llmtest.pojo.dto.TransformationDTO;
 import com.example.llmtest.pojo.entity.DataInfo;
 import com.example.llmtest.pojo.enums.DataSourceEnum;
 import com.example.llmtest.pojo.enums.TransformationTypeEnum;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 import com.example.llmtest.service.DataTransformationService;
 import com.example.llmtest.utils.CustomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,9 +25,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -53,10 +56,10 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
      * @return
      */
     @Override
-    public List<DataInfo> transformByModel(TransformationDTO dto) {
+    public List<DataInfoVO> transformByModel(TransformationDTO dto) {
         return transformBatch(dto);
     }
-    private List<DataInfo> transformBatch(TransformationDTO dto) {
+    private List<DataInfoVO> transformBatch(TransformationDTO dto) {
         List<Long> dataIds = dto.getDataIds();
         String transformationType = dto.getTransformationType();
         if (StringUtils.isNotBlank(transformationType)) {
@@ -116,6 +119,7 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
                 DataInfo newData = new DataInfo();
                 BeanUtils.copyProperties(originalData, newData);
                 newData.setDataId(null);
+                newData.setUpdateTime(new Timestamp(System.currentTimeMillis()));
                 newData.setQuestion(String.valueOf(result.get("question")));
                 newData.setAnswer(String.valueOf(result.get("answer")));
                 if (result.containsKey("options")) {
@@ -128,6 +132,7 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
                 newData.setModelId(modelMapper.selectIdByName((String)result.get("model")));
                 newData.setDataSource(DataSourceEnum.MODEL_GENERATION);
                 newData.setIsTransformed(1);
+                newData.setOriginalDataId(originalData.getDataId());
                 newData.setTransformationType(TransformationTypeEnum.valueOf(transformationType.toUpperCase()));
                 newData.setTransformationDescription(String.valueOf(result.get("process")));
 
@@ -139,7 +144,9 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
             Duration duration = Duration.between(startTime, endTime);
             log.info("批量处理{}道题目总耗时: {}分{}秒", dataIds.size(), duration.toMinutes(), duration.getSeconds() % 60);
 
-            return resultDataList;
+            return resultDataList.stream()
+                    .map(customUtil::convertToVO)
+                    .collect(Collectors.toList());
         } catch (JsonProcessingException e) {
             throw new RuntimeException("解析算法返回结果失败", e);
         } catch (Exception e) {

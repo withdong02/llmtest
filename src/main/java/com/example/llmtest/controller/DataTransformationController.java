@@ -3,6 +3,7 @@ package com.example.llmtest.controller;
 import com.example.llmtest.exceptionhandler.R;
 import com.example.llmtest.pojo.dto.TransformationDTO;
 import com.example.llmtest.pojo.entity.DataInfo;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 import com.example.llmtest.service.DataTransformationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,8 +26,8 @@ public class DataTransformationController {
 
     @Operation(summary = "题目变形")
     @PostMapping
-    public R<List<DataInfo>> transform(@RequestBody TransformationDTO dto) {
-        List<DataInfo> dataInfos = dataTransformationService.transformByModel(dto);
+    public R<List<DataInfoVO>> transform(@RequestBody TransformationDTO dto) {
+        List<DataInfoVO> dataInfos = dataTransformationService.transformByModel(dto);
         return R.success(dataInfos);
     }
 }

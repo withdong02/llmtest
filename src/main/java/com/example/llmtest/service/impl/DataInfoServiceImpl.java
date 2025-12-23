@@ -12,6 +12,7 @@ import com.example.llmtest.mapper.DataInfoMapper;
 import com.example.llmtest.mapper.MetricMapper;
 import com.example.llmtest.mapper.SubMetricMapper;
 import com.example.llmtest.pojo.enums.QuestionTypeEnum;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 import com.example.llmtest.service.DataInfoService;
 import com.example.llmtest.utils.CustomUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +44,7 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
      * @return
      */
     @Override
-    public IPage<DataInfo> getDataInfoByConditions(DataInfoPageQueryDTO queryDTO) {
+    public IPage<DataInfoVO> getDataInfoByConditions(DataInfoPageQueryDTO queryDTO) {
 
         if (StringUtils.isNotBlank(queryDTO.getSubMetric())) {
             if (StringUtils.isBlank(queryDTO.getMetric())) {
@@ -99,7 +100,9 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
                 queryWrapper.eq("sub_metric_id", subMetricId);
             }
         }
-        return this.page(page, queryWrapper);
+        IPage<DataInfo> dataInfoPage = this.page(page, queryWrapper);
+        IPage<DataInfoVO> voPage = dataInfoPage.convert(customUtil::convertToVO);
+        return voPage;
     }
 
     /**
@@ -108,24 +111,14 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
      * @return
      */
     @Override
-    public DataInfo getDataInfoByDataId(Long dataId) {
-        return dataInfoMapper.selectById(dataId);
+    public DataInfoVO getDataInfoByDataId(Long dataId) {
+        return customUtil.convertToVO(dataInfoMapper.selectById(dataId));
     }
 
 
     @Override
     public boolean updateDataInfo(DataInfo dataInfo) {
         return dataInfoMapper.updateById(dataInfo) > 0;
-    }
-
-    /**
-     * 根据题目id删除题目
-     * @param dataId
-     * @return
-     */
-    @Override
-    public boolean deleteDataInfoByDataId(Long dataId) {
-        return dataInfoMapper.deleteById(dataId) > 0;
     }
 
 }

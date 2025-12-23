@@ -15,19 +15,19 @@ public interface DataInfoService extends IService<DataInfo> {
      * @param queryDTO
      * @return
      */
-    IPage<DataInfo> getDataInfoByConditions(DataInfoPageQueryDTO queryDTO);
+    IPage<DataInfoVO> getDataInfoByConditions(DataInfoPageQueryDTO queryDTO);
 
     /**
      * 根据题目id查询题目
      * @param dataId
      * @return
      */
-    DataInfo getDataInfoByDataId(Long dataId);
+    DataInfoVO getDataInfoByDataId(Long dataId);
 
 
     boolean updateDataInfo(DataInfo dataInfo);
 
-    boolean deleteDataInfoByDataId(Long dataId);
+
 
 
 }

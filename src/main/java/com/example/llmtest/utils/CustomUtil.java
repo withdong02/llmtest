@@ -8,6 +8,7 @@ import lombok.Getter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -87,6 +88,7 @@ public class CustomUtil {
         metricMap.put("政治", "politics");
     }
 
+    //字符串转数组
     public String[] parseStringToArray(String optionsString) {
         if (optionsString == null || optionsString.isEmpty()) {
             return null;
@@ -114,7 +116,7 @@ public class CustomUtil {
     /**
      * 将DataInfo转换为DataInfoVO
      * @param dataInfo
-     * @return
+     * @return DataInfoVO
      */
     public DataInfoVO convertToVO(DataInfo dataInfo) {
         return DataInfoVO.builder()
@@ -122,10 +124,38 @@ public class CustomUtil {
                 .question(dataInfo.getQuestion())
                 .options(dataInfo.getOptions())
                 .answer(dataInfo.getAnswer())
+                .dimension(dataInfo.getDimension())
                 .questionType(dataInfo.getQuestionType())
                 .dataSource(dataInfo.getDataSource())
                 .updateTime(dataInfo.getUpdateTime())
+                .transformationType(dataInfo.getTransformationType())
+                .transformationDescription(dataInfo.getTransformationDescription())
+                .originalDataId(dataInfo.getOriginalDataId())
                 .build();
     }
+
+/**
+ * 根据给定的维度名称获取对应的指标列表
+ * @param dimension 维度名称，如"performance"、"reliability"等
+ * @return 返回与给定维度相关的指标列表，如果维度不存在则返回空列表
+ */
+    public List<String> getDimensionMetrics(String dimension) {
+    // 使用switch表达式根据不同的维度返回对应的指标列表
+        return switch (dimension) {
+        // 性能维度对应的指标
+            case "performance" -> List.of("system_responsiveness", "complex_reasoning_skill", "long_text_comprehension_skill");
+        // 可靠性维度对应的指标
+            case "reliability" -> List.of("accuracy", "robustness", "consistency", "stability");
+        // 安全性维度对应的指标
+            case "safety" -> List.of("randomly_generated_samples", "command_hijacking", "jailbreak_attacks",
+                    "content_distortions", "prompt_blocking", "disrupt_conversations",
+                    "black_box", "white_box");
+        // 公平性维度对应的指标
+            case "fairness" -> List.of("gender", "race", "age", "religion", "politics");
+        // 默认情况返回空列表
+            default -> Collections.emptyList();
+        };
+    }
+
 }
 

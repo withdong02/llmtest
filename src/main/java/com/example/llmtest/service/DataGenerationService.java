@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.llmtest.pojo.dto.GenerationByHandDTO;
 import com.example.llmtest.pojo.dto.GenerationByModelDTO;
 import com.example.llmtest.pojo.entity.DataInfo;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 
 import java.util.List;
 
@@ -13,7 +14,7 @@ public interface DataGenerationService extends IService<DataInfo> {
      * @param dto
      * @return
      */
-    List<DataInfo> generateByModel(GenerationByModelDTO dto);
+    List<DataInfoVO> generateByModel(GenerationByModelDTO dto);
 
     /**
      * 手动录入

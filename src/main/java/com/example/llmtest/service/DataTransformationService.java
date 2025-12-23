@@ -3,6 +3,7 @@ package com.example.llmtest.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.llmtest.pojo.dto.TransformationDTO;
 import com.example.llmtest.pojo.entity.DataInfo;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 
 import java.util.List;
 
@@ -14,5 +15,5 @@ public interface DataTransformationService extends IService<DataInfo> {
      * @param dto
      * @return
      */
-    List<DataInfo> transformByModel(TransformationDTO dto);
+    List<DataInfoVO> transformByModel(TransformationDTO dto);
 }

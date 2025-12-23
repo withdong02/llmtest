@@ -6,6 +6,7 @@ import com.example.llmtest.exceptionhandler.ReturnCode;
 import com.example.llmtest.mapper.ModelMapper;
 import com.example.llmtest.pojo.dto.GenerationByHandDTO;
 import com.example.llmtest.pojo.dto.GenerationByModelDTO;
+import com.example.llmtest.pojo.vo.DataInfoVO;
 import com.example.llmtest.service.DataGenerationService;
 import com.example.llmtest.utils.CustomUtil;
 import com.example.llmtest.pojo.entity.DataInfo;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> implements DataGenerationService {
@@ -57,7 +59,7 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
      * @return
      */
     @Transactional
-    public List<DataInfo> generateByModel(GenerationByModelDTO dto) {
+    public List<DataInfoVO> generateByModel(GenerationByModelDTO dto) {
         if (StringUtils.isNotBlank(dto.getSubMetric())) {
             if (StringUtils.isBlank(dto.getMetric())) {
                 throw new BusinessException(ReturnCode.RC400.getCode(), "指定子指标时，指标不能为空");
@@ -131,7 +133,9 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
         } catch (Exception e) {
             throw new RuntimeException("解析或保存数据失败", e);
         }
-        return returnVal;
+        return returnVal.stream()
+                .map(customUtil::convertToVO)
+                .collect(Collectors.toList());
     }
 
     /**

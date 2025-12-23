@@ -1,7 +1,9 @@
 package com.example.llmtest.pojo.vo;
 
 import com.example.llmtest.pojo.enums.DataSourceEnum;
+import com.example.llmtest.pojo.enums.DimensionEnum;
 import com.example.llmtest.pojo.enums.QuestionTypeEnum;
+import com.example.llmtest.pojo.enums.TransformationTypeEnum;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -26,10 +28,19 @@ public class DataInfoVO implements Serializable {
 
     private String answer;
 
+    private DimensionEnum dimension;
+
     private QuestionTypeEnum questionType;
 
     private DataSourceEnum dataSource;
 
+    private TransformationTypeEnum transformationType;
+
+    private String transformationDescription;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp updateTime;
+
+    private Long originalDataId;
+
 }
