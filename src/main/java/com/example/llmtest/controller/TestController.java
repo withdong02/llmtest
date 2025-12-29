@@ -24,16 +24,22 @@ public class TestController {
 
     private final TestService testService;
     private final TestDataGenerator testDataGenerator;
-    public TestController(TestService testService,
-                          TestDataGenerator testDataGenerator) {
+    public TestController(TestService testService, TestDataGenerator testDataGenerator) {
         this.testService = testService;
         this.testDataGenerator = testDataGenerator;
     }
 
     @Operation(summary = "系统响应效率测试")
-    @PostMapping("/performance/metric1")
-    public R<TestResultVO> metricOneTest(@RequestBody TestDTO dto) {
-        TestResultVO vo = testService.metricOneTest(dto);
+    @PostMapping("/sr")
+    public R<TestResultVO> srTest(@RequestBody TestDTO dto) {
+        TestResultVO vo = testService.srTest(dto);
+        return R.success(vo);
+    }
+
+    @Operation(summary = "其他指标测试")
+    @PostMapping("/other")
+    public R<TestResultVO> otherTest(@RequestBody TestDTO dto) {
+        TestResultVO vo = testService.otherTest(dto);
         return R.success(vo);
     }
 

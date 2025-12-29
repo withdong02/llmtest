@@ -22,7 +22,6 @@ public class TestInfo implements Serializable {
     private Long modelId;
     private DimensionEnum dimension;
     private Long metricId;
-    @TableField("sub_metric_id")
     private Long subMetricId;
 
     private String os;
@@ -33,7 +32,7 @@ public class TestInfo implements Serializable {
     private String testDescription;
 
     private String status;
-    private Double score;
+    private Double finalScore;
     private String resultDescription;
 
     @TableLogic

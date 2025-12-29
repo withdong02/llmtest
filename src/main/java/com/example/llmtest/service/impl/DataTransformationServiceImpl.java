@@ -15,14 +15,16 @@ import com.example.llmtest.utils.CustomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.micrometer.common.util.StringUtils;
+
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.sql.Timestamp;
@@ -56,9 +58,12 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
      * @return
      */
     @Override
+    @Transactional
     public List<DataInfoVO> transformByModel(TransformationDTO dto) {
         return transformBatch(dto);
     }
+
+
     private List<DataInfoVO> transformBatch(TransformationDTO dto) {
         List<Long> dataIds = dto.getDataIds();
         String transformationType = dto.getTransformationType();
@@ -106,7 +111,7 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
             throw new BusinessException(500, "调用 Flask 接口失败，状态码：" + response.getStatusCode());
         }
         try {
-            List<Map<String, Object>> allResults = objectMapper.readValue(response.getBody(), new TypeReference<List<Map<String, Object>>>() {});
+            List<Map<String, Object>> allResults = objectMapper.readValue(response.getBody(), new TypeReference<>() {});
 
             List<DataInfo> resultDataList = new ArrayList<>();
 

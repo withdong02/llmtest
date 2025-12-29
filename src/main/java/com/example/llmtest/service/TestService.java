@@ -12,5 +12,12 @@ public interface TestService extends IService<TestInfo> {
      * @param dto
      * @return
      */
-    TestResultVO metricOneTest(TestDTO dto);
+    TestResultVO srTest(TestDTO dto);
+
+    /**
+     * 其他指标测试
+     * @param dto
+     * @return
+     */
+    TestResultVO otherTest(TestDTO dto);
 }

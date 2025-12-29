@@ -4,11 +4,18 @@
 
     <!-- 批量插入测试题目关联关系 -->
     <insert id="insertBatch" parameterType="java.util.List">
+        INSERT INTO test_question_relation (test_id, data_id, single_score)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.testId}, #{item.dataId}, #{item.singleScore})
+        </foreach>
+    </insert>
+
+    <insert id="insertBatchWithoutScore" parameterType="java.util.List">
         INSERT INTO test_question_relation (test_id, data_id)
         VALUES
         <foreach collection="list" item="item" separator=",">
             (#{item.testId}, #{item.dataId})
         </foreach>
     </insert>
-
 </mapper>

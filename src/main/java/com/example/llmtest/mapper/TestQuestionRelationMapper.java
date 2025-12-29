@@ -2,9 +2,7 @@ package com.example.llmtest.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.example.llmtest.pojo.entity.TestQuestionRelation;
-import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -12,4 +10,6 @@ import java.util.List;
 public interface TestQuestionRelationMapper extends BaseMapper<TestQuestionRelation> {
 
     int insertBatch(List<TestQuestionRelation> list);
+
+    int insertBatchWithoutScore(List<TestQuestionRelation> list);
 }

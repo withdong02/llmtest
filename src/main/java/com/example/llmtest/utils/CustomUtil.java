@@ -5,9 +5,11 @@ import com.example.llmtest.pojo.vo.DataInfoVO;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import lombok.Getter;
-import org.springframework.context.annotation.Configuration;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +17,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @Component
+@Slf4j
 public class CustomUtil {
 
     // 维度映射
@@ -156,6 +159,18 @@ public class CustomUtil {
             default -> Collections.emptyList();
         };
     }
+
+/**
+ * 计算并记录批量处理题目所花费的时间
+ * @param startTime 开始处理的时间
+ * @param endTime 结束处理的时间
+ * @param count 处理的题目数量
+ */
+    public void timeSpent (LocalDateTime startTime, LocalDateTime endTime, Long count) {
+        Duration duration = Duration.between(startTime, endTime);
+        log.info("批量处理{}道题目总耗时: {}分{}秒", count, duration.toMinutes(), duration.getSeconds() % 60);
+    }
+
 
 }
 
