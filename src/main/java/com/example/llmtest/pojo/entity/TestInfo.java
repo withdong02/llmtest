@@ -22,7 +22,6 @@ public class TestInfo implements Serializable {
     private Long modelId;
     private DimensionEnum dimension;
     private Long metricId;
-    private Long subMetricId;
 
     private String os;
     private String cpu;

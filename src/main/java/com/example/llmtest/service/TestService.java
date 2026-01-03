@@ -8,16 +8,14 @@ import com.example.llmtest.pojo.vo.TestResultVO;
 public interface TestService extends IService<TestInfo> {
 
     /**
-     * 系统响应效率测试
-     * @param dto
-     * @return
+     * 系统响应效率和公平性测试
+     * @return vo
      */
-    TestResultVO srTest(TestDTO dto);
+    TestResultVO questionTest(TestDTO dto);
 
     /**
-     * 其他指标测试
-     * @param dto
-     * @return
+     * 剩余指标测试
+     * @return vo
      */
-    TestResultVO otherTest(TestDTO dto);
+    TestResultVO metricTest(TestDTO dto);
 }

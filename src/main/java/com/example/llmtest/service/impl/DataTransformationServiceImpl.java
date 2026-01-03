@@ -73,7 +73,6 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
             }
         }
 
-
         List<Map<String, Object>> requestBody = new ArrayList<>();
         List<DataInfo> originalDataList = new ArrayList<>();
 

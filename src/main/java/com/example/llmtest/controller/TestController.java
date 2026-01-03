@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
-@Tag(name = "性能测试")
+@Tag(name = "测试")
 @RestController
 @RequestMapping("/test")
 @Slf4j
@@ -29,17 +29,17 @@ public class TestController {
         this.testDataGenerator = testDataGenerator;
     }
 
-    @Operation(summary = "系统响应效率测试")
-    @PostMapping("/sr")
+    @Operation(summary = "系统响应效率测试和公平性测试")
+    @PostMapping("/test1")
     public R<TestResultVO> srTest(@RequestBody TestDTO dto) {
-        TestResultVO vo = testService.srTest(dto);
+        TestResultVO vo = testService.questionTest(dto);
         return R.success(vo);
     }
 
-    @Operation(summary = "其他指标测试")
-    @PostMapping("/other")
+    @Operation(summary = "剩余指标测试")
+    @PostMapping("/test2")
     public R<TestResultVO> otherTest(@RequestBody TestDTO dto) {
-        TestResultVO vo = testService.otherTest(dto);
+        TestResultVO vo = testService.metricTest(dto);
         return R.success(vo);
     }
 

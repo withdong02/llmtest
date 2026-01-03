@@ -7,8 +7,8 @@ import com.example.llmtest.mapper.*;
 import com.example.llmtest.pojo.dto.TestDTO;
 import com.example.llmtest.pojo.entity.DataInfo;
 import com.example.llmtest.pojo.entity.TestInfo;
-import com.example.llmtest.pojo.entity.TestQuestionRelation;
-import com.example.llmtest.pojo.entity.TestScore;
+import com.example.llmtest.pojo.entity.TestQuestions;
+import com.example.llmtest.pojo.entity.TestScores;
 import com.example.llmtest.pojo.enums.DimensionEnum;
 import com.example.llmtest.pojo.vo.TestResultVO;
 import com.example.llmtest.service.TestService;
@@ -60,14 +60,14 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
         this.testQuestionRelationMapper = testQuestionRelationMapper;
         this.testScoreMapper = testScoreMapper;
     }
+
     /**
-     * 系统响应效率和公平性测试
-     * @param dto
-     * @return
+     * 系统响应效率和公平性测试，按题目给分
+     * @return vo
      */
     @Override
     @Transactional
-    public TestResultVO srTest(TestDTO dto) {
+    public TestResultVO questionTest(TestDTO dto) {
         String dimension = dto.getDimension();//维度只能是performance 或者fairness
         String metric = dto.getMetric();//metric只能是system_responsiveness
         if (StringUtils.isBlank(dimension) || (!"performance".equals(dimension) && !"fairness".equals(dimension))) {
@@ -86,12 +86,11 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             requestBody.put("domain", metric);
         }
         //判断每个metric下的各小指标比例是否正常（10%~90%）
-        //isValid(dto.getQuestionList(), dimension, metric);
+        isValid(dto.getQuestionList(), dimension, metric);
 
         List<Long> questionList = dto.getQuestionList();
-        List<Object> qsList = new ArrayList<>();
-        for (int i = 0; i < questionList.size(); i++) {
-            Long dataId = questionList.get(i);
+        List<Map<String, Object>> qsList = new ArrayList<>();
+        for (Long dataId : questionList) {
             DataInfo data = dataInfoMapper.selectById(dataId);
             if (StringUtils.isNotBlank(dimension) && !data.getDimension().getValue().equals(dimension)) {
                 log.warn("id为{}的题目维度不符合，已自动跳过", dataId);
@@ -122,10 +121,8 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             }
             everyData.put("answer", data.getAnswer());
             everyData.put("type_index", data.getQuestionType().getValue());
-            if (data.getOptions() != null && !data.getOptions().isEmpty()) {
-                String[] options = customUtil.parseStringToArray(data.getOptions());
-                everyData.put("options", options);
-            }
+            String[] options = customUtil.parseStringToArray(data.getOptions());
+            everyData.put("options", options);
             //判断min_metric内容
             if (flag) {
                 everyData.put("min_metric", "system_responsiveness");
@@ -153,6 +150,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
         TestResultVO vo = new TestResultVO();
         try {
+            //TODO 需要确认single_score返回字段
             Map<String, Object> result = objectMapper.readValue(response.getBody(),
                     new TypeReference<Map<String, Object>>() {});
             Map<String, Object> score = (Map<String, Object>) result.get("result");
@@ -180,10 +178,10 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
 
             //批量插入testId和dataId
-            List<TestQuestionRelation> relations = new ArrayList<>();
+            List<TestQuestions> relations = new ArrayList<>();
             int i = 0;
             for (Long dataId : questionList) {
-                TestQuestionRelation relation = new TestQuestionRelation();
+                TestQuestions relation = new TestQuestions();
                 relation.setTestId(testInfo.getTestId());
                 relation.setDataId(dataId);
                 if (i >= singleScore.length) break;//可能有的题目出错，没有分数。
@@ -206,12 +204,11 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
     /**
      * 其他指标测试
-     * @param dto
-     * @return
+     * @return vo
      */
     @Override
     @Transactional
-    public TestResultVO otherTest(TestDTO dto) {
+    public TestResultVO metricTest(TestDTO dto) {
         String dimension = dto.getDimension();
         String metric = dto.getMetric();
         boolean flag = "performance".equals(dimension);//false表示其他两个维度，true表示复杂推理能力或者长文本理解能力
@@ -237,9 +234,8 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             requestBody.put("domain", dimension);
         }
         List<Long> questionList = dto.getQuestionList();
-        List<Object> qsList = new ArrayList<>();
-        for (int i = 0; i < questionList.size(); i++) {
-            Long dataId = questionList.get(i);
+        List<Map<String, Object>> qsList = new ArrayList<>();
+        for (Long dataId : questionList) {
             DataInfo data = dataInfoMapper.selectById(dataId);
             if (StringUtils.isNotBlank(dimension) && !data.getDimension().getValue().equals(dimension)) {
                 log.warn("id为{}的题目维度不符合，已自动跳过", dataId);
@@ -250,14 +246,13 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
                 continue;
             }
             HashMap<String, Object> everyData = new HashMap<>();
-            everyData.put("rowIdx", i);
+            everyData.put("rowIdx", dataId);
             everyData.put("question", data.getQuestion());
             everyData.put("answer", data.getAnswer());
             everyData.put("type_index", data.getQuestionType().getValue());
-            if (data.getOptions() != null && !data.getOptions().isEmpty()) {
-                String[] options = customUtil.parseStringToArray(data.getOptions());
-                everyData.put("options", options);
-            }
+            String[] options = customUtil.parseStringToArray(data.getOptions());
+            everyData.put("options", options);
+
             //判断min_metric内容
             if (flag) {
                 everyData.put("min_metric", subMetricMapper.selectNameById(data.getSubMetricId()));
@@ -267,6 +262,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             qsList.add(everyData);
         }
         requestBody.put("qs_list", qsList);
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         log.info("发送请求");
@@ -335,9 +331,9 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             this.save(testInfo);
 
             //批量插入testId和dataId
-            List<TestQuestionRelation> relations = new ArrayList<>();
+            List<TestQuestions> relations = new ArrayList<>();
             for (Long dataId : questionList) {
-                TestQuestionRelation relation = new TestQuestionRelation();
+                TestQuestions relation = new TestQuestions();
                 relation.setTestId(testInfo.getTestId());
                 relation.setDataId(dataId);
                 relations.add(relation);
@@ -345,17 +341,17 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             testQuestionRelationMapper.insertBatchWithoutScore(relations);
 
             //
-            List<TestScore> scores = metricScores.entrySet().stream()
+            List<TestScores> scores = metricScores.entrySet().stream()
                     .map(entry -> {
-                        TestScore testScore = new TestScore();
-                        testScore.setTestId(testInfo.getTestId());
-                        testScore.setDimension(DimensionEnum.forValue(dimension));
-                        testScore.setMetricId(metricMapper.selectIdByName(flag ? metric : entry.getKey()));
+                        TestScores testScores = new TestScores();
+                        testScores.setTestId(testInfo.getTestId());
+                        testScores.setDimension(DimensionEnum.forValue(dimension));
+                        testScores.setMetricId(metricMapper.selectIdByName(flag ? metric : entry.getKey()));
                         if (flag) {
-                            testScore.setSubMetricId(subMetricMapper.selectIdByName(entry.getKey()));
+                            testScores.setSubMetricId(subMetricMapper.selectIdByName(entry.getKey()));
                         }
-                        testScore.setSingleScore(entry.getValue());
-                        return testScore;
+                        testScores.setSingleScore(entry.getValue());
+                        return testScores;
                     })
                     .collect(Collectors.toList());
 
