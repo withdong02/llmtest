@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 @Mapper
-public interface TestQuestionRelationMapper extends BaseMapper<TestQuestions> {
+public interface TestQuestionsMapper extends BaseMapper<TestQuestions> {
 
     int insertBatch(List<TestQuestions> list);
 

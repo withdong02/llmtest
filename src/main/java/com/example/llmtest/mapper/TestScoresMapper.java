@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 import java.util.List;
 
 @Mapper
-public interface TestScoreMapper extends BaseMapper<TestScores> {
+public interface TestScoresMapper extends BaseMapper<TestScores> {
 
     int insertBatch(List<TestScores> list);
 }

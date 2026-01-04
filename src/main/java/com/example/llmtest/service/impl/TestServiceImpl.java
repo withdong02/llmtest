@@ -15,9 +15,11 @@ import com.example.llmtest.service.TestService;
 import com.example.llmtest.utils.CustomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -43,22 +45,22 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
     private final ModelMapper modelMapper;
     private final MetricMapper metricMapper;
     private final SubMetricMapper subMetricMapper;
-    private final TestScoreMapper testScoreMapper;
-    private final TestQuestionRelationMapper testQuestionRelationMapper;
+    private final TestScoresMapper testScoresMapper;
+    private final TestQuestionsMapper testQuestionsMapper;
 
     public TestServiceImpl(RestTemplate restTemplate, CustomUtil customUtil,
                            DataInfoMapper dataInfoMapper, ModelMapper modelMapper,
                            MetricMapper metricMapper,
-                           TestQuestionRelationMapper testQuestionRelationMapper,
-                           SubMetricMapper subMetricMapper, TestScoreMapper testScoreMapper) {
+                           TestQuestionsMapper testQuestionsMapper,
+                           SubMetricMapper subMetricMapper, TestScoresMapper testScoresMapper) {
         this.restTemplate = restTemplate;
         this.customUtil = customUtil;
         this.dataInfoMapper = dataInfoMapper;
         this.modelMapper = modelMapper;
         this.metricMapper = metricMapper;
         this.subMetricMapper = subMetricMapper;
-        this.testQuestionRelationMapper = testQuestionRelationMapper;
-        this.testScoreMapper = testScoreMapper;
+        this.testQuestionsMapper = testQuestionsMapper;
+        this.testScoresMapper = testScoresMapper;
     }
 
     /**
@@ -150,22 +152,27 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
         TestResultVO vo = new TestResultVO();
         try {
-            //TODO 需要确认single_score返回字段
-            Map<String, Object> result = objectMapper.readValue(response.getBody(),
-                    new TypeReference<Map<String, Object>>() {});
-            Map<String, Object> score = (Map<String, Object>) result.get("result");
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            List<Map<String, Object>> modelResponse = Optional.ofNullable(jsonNode.get("model_response"))
+                    .filter(JsonNode::isArray)
+                    .map(node -> objectMapper.convertValue(node, new TypeReference<List<Map<String, Object>>>() {}))
+                    .orElseThrow(() -> new BusinessException(500, "模型响应格式不正确，model_response应为List类型"));
+
+            Map<String, Object> score = Optional.ofNullable(jsonNode.get("score"))
+                    .filter(JsonNode::isObject)
+                    .map(node -> objectMapper.convertValue(node, new TypeReference<Map<String, Object>>() {}))
+                    .orElseThrow(() -> new BusinessException(500, "模型响应格式不正确，score应为Map类型"));
 
             Double finalScore = (Double)score.get("final_score");
             vo.setFinalScore(finalScore);
-            List<Double> singleScoreList = (List<Double>) score.get("single_score");
-            Double[] singleScore = singleScoreList.toArray(new Double[0]);
+            Double[] singleScore = (Double[]) score.get("single_score");
             vo.setSingleScore(singleScore);
             String resultDescription = "finalScore is " + finalScore + "singleScore is " + Arrays.toString(singleScore);
             log.info(resultDescription);
             TestInfo testInfo = TestInfo.builder()
                     .name(dto.getTestName())
                     .modelId(modelMapper.selectIdByName(dto.getModelName()))
-                    .dimension(DimensionEnum.valueOf(dimension.toUpperCase()))
+                    .dimension(DimensionEnum.forValue(dimension))
                     .metricId(metricMapper.selectIdByName(dto.getMetric()))
                     .os(dto.getOs())
                     .cpu(dto.getCpu())
@@ -176,22 +183,32 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
                     .build();
             this.save(testInfo);
 
-
-            //批量插入testId和dataId
-            List<TestQuestions> relations = new ArrayList<>();
+            //插入数据至test_questions表和test_scores表
+            List<TestQuestions> testQuestionsList = new ArrayList<>();
+            List<TestScores> testScoresList = new ArrayList<>();
             int i = 0;
-            for (Long dataId : questionList) {
-                TestQuestions relation = new TestQuestions();
-                relation.setTestId(testInfo.getTestId());
-                relation.setDataId(dataId);
-                if (i >= singleScore.length) break;//可能有的题目出错，没有分数。
-                relation.setSingleScore(singleScore[i++]);
-                // TODO:未处理系统响应效率的single_score
-                // TODO:还没有存储模型输出
-                relations.add(relation);
-            }
-            testQuestionRelationMapper.insertBatch(relations);
+            for (Map<String, Object> responseItem : modelResponse) {
+                Long testId = testInfo.getTestId();
+                Long dataId = (Long)responseItem.get("data_id");
+                TestQuestions testQuestion = new TestQuestions();
+                testQuestion.setTestId(testId);
+                testQuestion.setDataId(dataId);
+                testQuestion.setModelOutput(String.valueOf(responseItem.get("response")));
+                testQuestionsList.add(testQuestion);
 
+                TestScores testScore = new TestScores();
+                testScore.setTestId(testId);
+                testScore.setDimension(DimensionEnum.forValue(dimension));
+                testScore.setItemType("question");
+                testScore.setItemId(dataId);
+                //TODO: singleScore分数可能有缺失，没有考虑到
+                if (i < singleScore.length)testScore.setScore(singleScore[i]);
+                i++;
+            }
+            int count1 = testQuestionsMapper.insertBatch(testQuestionsList);
+            log.info("成功向test_questions表中插入{}条数据", count1);
+            int count2 = testScoresMapper.insertBatch(testScoresList);
+            log.info("成功向test_scores表中插入{}条数据", count2);
 
             customUtil.timeSpent(startTime, LocalDateTime.now(), (long)questionList.size());
         } catch (JsonProcessingException e) {
@@ -203,7 +220,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
     }
 
     /**
-     * 其他指标测试
+     * 剩余指标测试
      * @return vo
      */
     @Override
@@ -211,7 +228,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
     public TestResultVO metricTest(TestDTO dto) {
         String dimension = dto.getDimension();
         String metric = dto.getMetric();
-        boolean flag = "performance".equals(dimension);//false表示其他两个维度，true表示复杂推理能力或者长文本理解能力
+        boolean flag = "performance".equals(dimension);//true表示复杂推理能力或者长文本理解能力，false表示其他两个维度
         if (StringUtils.isNotBlank(dimension)) {
             if (!customUtil.getDimensionMap().containsValue(dimension)) {
                 throw new BusinessException(ReturnCode.RC400.getCode(), "维度不存在");
@@ -271,50 +288,44 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
         //接受响应
         ResponseEntity<String> response = restTemplate.postForEntity(FLASK_URL, requestEntity, String.class);
+        log.info("接收响应，状态码: {}, 耗时: {}秒",
+                response.getStatusCode(),
+                Duration.between(startTime, LocalDateTime.now()).getSeconds());
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new BusinessException(500, "调用 Flask 接口失败，状态码：" + response.getStatusCode());
         }
 
         TestResultVO vo = new TestResultVO();
         try {
-            Map<String, Object> result = objectMapper.readValue(response.getBody(),
-                    new TypeReference<>() {});
+            JsonNode jsonNode = objectMapper.readTree(response.getBody());
+            List<Map<String, Object>> modelResponse = Optional.ofNullable(jsonNode.get("model_response"))
+                    .filter(JsonNode::isArray)
+                    .map(node -> objectMapper.convertValue(node, new TypeReference<List<Map<String, Object>>>() {}))
+                    .orElseThrow(() -> new BusinessException(500, "模型响应格式不正确，model_response应为List类型"));
 
-
-            /*Double finalScore = (double)score.get("final_score");
+            Map<String, Object> score = Optional.ofNullable(jsonNode.get("score"))
+                    .filter(JsonNode::isObject)
+                    .map(node -> objectMapper.convertValue(node, new TypeReference<Map<String, Object>>() {}))
+                    .orElseThrow(() -> new BusinessException(500, "模型响应格式不正确，score应为Map类型"));
+            Double finalScore = (double)score.get("final_score");
             vo.setFinalScore(finalScore);
-            List<Double> singleScoreList = (List<Double>) score.get("single_score");
-            Double[] singleScore = singleScoreList.toArray(new Double[0]);
-            vo.setSingleScore(singleScore);
-            String resultDescription = "finalScore is " + finalScore + "singleScore is " + Arrays.toString(singleScore);
-            log.info(resultDescription);
-            */
-            // 获取result部分，如果不存在则使用空Map
-            Map<String, Double> score = Optional.ofNullable(result.get("result"))
-                    .map(obj -> (Map<String, Double>) obj)
-                    .orElse(new HashMap<>());
-
-            // 安全获取final_score
-            Double finalScore = Optional.ofNullable(score.get("final_score"))
-                    .map(obj -> Double.parseDouble(obj.toString()))
-                    .orElse(0.0);
-            vo.setFinalScore(finalScore);
-            log.info("测试总分为{}", finalScore);
+            StringBuilder resultDescription = new StringBuilder();
+            resultDescription.append("测试总分为: ").append(finalScore).append("各指标测试分数为: ");
             //获取各指标分数
             Map<String, Double> metricScores = new HashMap<>();
             score.entrySet().stream()
                     .filter(entry -> !entry.getKey().equals("final_score"))
                     .forEach(entry -> {
                         String key = entry.getKey();
-                        Double value = entry.getValue();
+                        Double value = (Double)entry.getValue();
                         metricScores.put(key, value);
                     });
             vo.setMetricScores(metricScores);
 
-            StringBuilder resultDescription = new StringBuilder();
             metricScores.forEach((key, value) ->
-                    resultDescription.append(key).append(": ").append(value).append("----"));
-            log.info("各指标测试分数为" + resultDescription.toString());
+                    resultDescription.append(key).append(": ").append(value).append(" "));
+            log.info(resultDescription.toString());
+
 
             TestInfo testInfo = TestInfo.builder()
                     .name(dto.getTestName())
@@ -330,34 +341,38 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
                     .build();
             this.save(testInfo);
 
-            //批量插入testId和dataId
-            List<TestQuestions> relations = new ArrayList<>();
-            for (Long dataId : questionList) {
-                TestQuestions relation = new TestQuestions();
-                relation.setTestId(testInfo.getTestId());
-                relation.setDataId(dataId);
-                relations.add(relation);
+            //插入数据至test_questions表
+            List<TestQuestions> testQuestionsList = new ArrayList<>();
+            int i = 0;
+            for (Map<String, Object> responseItem : modelResponse) {
+                Long testId = testInfo.getTestId();
+                Long dataId = (Long)responseItem.get("data_id");
+                TestQuestions testQuestion = new TestQuestions();
+                testQuestion.setTestId(testId);
+                testQuestion.setDataId(dataId);
+                testQuestion.setModelOutput(String.valueOf(responseItem.get("response")));
+                testQuestionsList.add(testQuestion);
             }
-            testQuestionRelationMapper.insertBatchWithoutScore(relations);
+            int count1 = testQuestionsMapper.insertBatch(testQuestionsList);
+            log.info("成功向test_questions表中插入{}条数据", count1);
 
-            //
-            List<TestScores> scores = metricScores.entrySet().stream()
+            //插入数据至test_scores表
+            List<TestScores> testScoresList = metricScores.entrySet().stream()
                     .map(entry -> {
-                        TestScores testScores = new TestScores();
-                        testScores.setTestId(testInfo.getTestId());
-                        testScores.setDimension(DimensionEnum.forValue(dimension));
-                        testScores.setMetricId(metricMapper.selectIdByName(flag ? metric : entry.getKey()));
-                        if (flag) {
-                            testScores.setSubMetricId(subMetricMapper.selectIdByName(entry.getKey()));
-                        }
-                        testScores.setSingleScore(entry.getValue());
-                        return testScores;
+                        TestScores testScore = new TestScores();
+                        testScore.setTestId(testInfo.getTestId());
+                        testScore.setItemType("metric");
+                        testScore.setDimension(DimensionEnum.forValue(dimension));
+                        testScore.setItemId(flag ?
+                                subMetricMapper.selectIdByName(entry.getKey()) :
+                                metricMapper.selectIdByName(entry.getKey()));
+                        testScore.setScore(entry.getValue());
+                        return testScore;
                     })
                     .collect(Collectors.toList());
+            int count2 = testScoresMapper.insertBatch(testScoresList);
+            log.info("成功向test_scores表中插入{}条数据", count2);
 
-            testScoreMapper.insertBatch(scores);
-
-            testQuestionRelationMapper.insertBatch(relations);
             customUtil.timeSpent(startTime, LocalDateTime.now(), (long)questionList.size());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
