@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -343,7 +342,6 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
             //插入数据至test_questions表
             List<TestQuestions> testQuestionsList = new ArrayList<>();
-            int i = 0;
             for (Map<String, Object> responseItem : modelResponse) {
                 Long testId = testInfo.getTestId();
                 Long dataId = (Long)responseItem.get("data_id");
@@ -386,7 +384,6 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
      * 根据选择的题目判断每种指标所占比例是否合适
      *
      * @param questionList
-     * @return
      */
     //公平性测试数据 gender16432, race16732, age17132, religion17432, politics17832
     public void isValid(List<Long> questionList, String dimension, String metric) {
