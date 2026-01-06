@@ -101,7 +101,7 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
             }
         }
         IPage<DataInfo> dataInfoPage = this.page(page, queryWrapper);
-        IPage<DataInfoVO> voPage = dataInfoPage.convert(customUtil::convertToVO);
+        IPage<DataInfoVO> voPage = dataInfoPage.convert(customUtil::convertToDataInfoVO);
         return voPage;
     }
 
@@ -112,7 +112,7 @@ public class DataInfoServiceImpl extends ServiceImpl<DataInfoMapper, DataInfo> i
      */
     @Override
     public DataInfoVO getDataInfoByDataId(Long dataId) {
-        return customUtil.convertToVO(dataInfoMapper.selectById(dataId));
+        return customUtil.convertToDataInfoVO(dataInfoMapper.selectById(dataId));
     }
 
 

@@ -163,7 +163,7 @@ public class TestDataGenerator {
         }
 
         return questionList.stream()
-                .map(customUtil::convertToVO)
+                .map(customUtil::convertToDataInfoVO)
                 .collect(Collectors.toList());
     }
 }

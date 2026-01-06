@@ -8,4 +8,7 @@ public interface ModelMapper extends BaseMapper<Metric> {
 
     @Select("SELECT model_id FROM model WHERE model_name = #{modelName}")
     Long selectIdByName(String modelName);
+
+    @Select("SELECT model_name FROM model WHERE model_id = #{modelId}")
+    String selectNameById(Long modelId);
 }

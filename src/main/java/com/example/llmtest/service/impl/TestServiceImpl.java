@@ -1,5 +1,7 @@
 package com.example.llmtest.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.llmtest.exceptionhandler.BusinessException;
 import com.example.llmtest.exceptionhandler.ReturnCode;
@@ -10,7 +12,9 @@ import com.example.llmtest.pojo.entity.TestInfo;
 import com.example.llmtest.pojo.entity.TestQuestions;
 import com.example.llmtest.pojo.entity.TestScores;
 import com.example.llmtest.pojo.enums.DimensionEnum;
+import com.example.llmtest.pojo.vo.TestExactVO;
 import com.example.llmtest.pojo.vo.TestResultVO;
+import com.example.llmtest.pojo.vo.TestInfoVO;
 import com.example.llmtest.service.TestService;
 import com.example.llmtest.utils.CustomUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -46,12 +50,13 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
     private final SubMetricMapper subMetricMapper;
     private final TestScoresMapper testScoresMapper;
     private final TestQuestionsMapper testQuestionsMapper;
+    private final TestInfoMapper testInfoMapper;
 
     public TestServiceImpl(RestTemplate restTemplate, CustomUtil customUtil,
                            DataInfoMapper dataInfoMapper, ModelMapper modelMapper,
                            MetricMapper metricMapper,
                            TestQuestionsMapper testQuestionsMapper,
-                           SubMetricMapper subMetricMapper, TestScoresMapper testScoresMapper) {
+                           SubMetricMapper subMetricMapper, TestScoresMapper testScoresMapper, TestInfoMapper testInfoMapper) {
         this.restTemplate = restTemplate;
         this.customUtil = customUtil;
         this.dataInfoMapper = dataInfoMapper;
@@ -60,6 +65,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
         this.subMetricMapper = subMetricMapper;
         this.testQuestionsMapper = testQuestionsMapper;
         this.testScoresMapper = testScoresMapper;
+        this.testInfoMapper = testInfoMapper;
     }
 
     /**
@@ -90,15 +96,18 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
         isValid(dto.getQuestionList(), dimension, metric);
 
         List<Long> questionList = dto.getQuestionList();
+        int questionCount = questionList.size();
         List<Map<String, Object>> qsList = new ArrayList<>();
         for (Long dataId : questionList) {
             DataInfo data = dataInfoMapper.selectById(dataId);
             if (StringUtils.isNotBlank(dimension) && !data.getDimension().getValue().equals(dimension)) {
                 log.warn("id为{}的题目维度不符合，已自动跳过", dataId);
+                questionCount--;
                 continue;
             }
             if (StringUtils.isNotBlank(metric) && !metricMapper.selectIdByName(metric).equals(data.getMetricId())) {
                 log.warn("id为{}的题目指标不符合，已自动跳过", dataId);
+                questionCount--;
                 continue;
             }
             HashMap<String, Object> everyData = new HashMap<>();
@@ -164,7 +173,9 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
             Double finalScore = (Double)score.get("final_score");
             vo.setFinalScore(finalScore);
-            Double[] singleScore = (Double[]) score.get("single_score");
+            List<Double> arrayList = (List<Double>) score.get("single_score");
+            Double[] singleScore = arrayList.toArray(Double[]::new);
+
             vo.setSingleScore(singleScore);
             String resultDescription = "finalScore is " + finalScore + "singleScore is " + Arrays.toString(singleScore);
             log.info(resultDescription);
@@ -177,10 +188,11 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
                     .cpu(dto.getCpu())
                     .gpu(dto.getGpu())
                     .finalScore(finalScore)
-                    .count((long) questionList.size())
+                    .count((long)questionCount)
                     .resultDescription(resultDescription)
                     .build();
             this.save(testInfo);
+            vo.setTestId(testInfo.getTestId());
 
             //插入数据至test_questions表和test_scores表
             List<TestQuestions> testQuestionsList = new ArrayList<>();
@@ -188,11 +200,19 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             int i = 0;
             for (Map<String, Object> responseItem : modelResponse) {
                 Long testId = testInfo.getTestId();
-                Long dataId = (Long)responseItem.get("data_id");
+                Long dataId = ((Integer)responseItem.get("dataId")).longValue();
                 TestQuestions testQuestion = new TestQuestions();
                 testQuestion.setTestId(testId);
                 testQuestion.setDataId(dataId);
-                testQuestion.setModelOutput(String.valueOf(responseItem.get("response")));
+                //问题比较组的模型输出进行特殊处理
+                DataInfo data = dataInfoMapper.selectById(dataId);
+                if (data.getQuestionType().getValue().equals("compare_question")) {
+                    String str = responseItem.get("response_A") + "|" +
+                            responseItem.get("response_B");
+                    testQuestion.setModelOutput(str);
+                } else {
+                    testQuestion.setModelOutput(String.valueOf(responseItem.get("response")));
+                }
                 testQuestionsList.add(testQuestion);
 
                 TestScores testScore = new TestScores();
@@ -203,6 +223,8 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
                 //TODO: singleScore分数可能有缺失，没有考虑到
                 if (i < singleScore.length)testScore.setScore(singleScore[i]);
                 i++;
+                testScoresList.add(testScore);
+
             }
             int count1 = testQuestionsMapper.insertBatch(testQuestionsList);
             log.info("成功向test_questions表中插入{}条数据", count1);
@@ -213,6 +235,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON processing error", e);
         } catch (Exception e) {
+            log.error(e.getMessage());
             throw new RuntimeException(e);
         }
         return vo;
@@ -250,15 +273,18 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
             requestBody.put("domain", dimension);
         }
         List<Long> questionList = dto.getQuestionList();
+        int questionCount = questionList.size();
         List<Map<String, Object>> qsList = new ArrayList<>();
         for (Long dataId : questionList) {
             DataInfo data = dataInfoMapper.selectById(dataId);
             if (StringUtils.isNotBlank(dimension) && !data.getDimension().getValue().equals(dimension)) {
                 log.warn("id为{}的题目维度不符合，已自动跳过", dataId);
+                questionCount--;
                 continue;
             }
             if (StringUtils.isNotBlank(metric) && !metricMapper.selectIdByName(metric).equals(data.getMetricId())) {
                 log.warn("id为{}的题目指标不符合，已自动跳过", dataId);
+                questionCount--;
                 continue;
             }
             HashMap<String, Object> everyData = new HashMap<>();
@@ -335,16 +361,16 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
                     .cpu(dto.getCpu())
                     .gpu(dto.getGpu())
                     .finalScore(finalScore)
-                    .count((long) questionList.size())
+                    .count((long)questionCount)
                     .resultDescription(resultDescription.toString())
                     .build();
             this.save(testInfo);
-
+            vo.setTestId(testInfo.getTestId());
             //插入数据至test_questions表
             List<TestQuestions> testQuestionsList = new ArrayList<>();
             for (Map<String, Object> responseItem : modelResponse) {
                 Long testId = testInfo.getTestId();
-                Long dataId = (Long)responseItem.get("data_id");
+                Long dataId = ((Integer)responseItem.get("dataId")).longValue();
                 TestQuestions testQuestion = new TestQuestions();
                 testQuestion.setTestId(testId);
                 testQuestion.setDataId(dataId);
@@ -373,12 +399,13 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
             customUtil.timeSpent(startTime, LocalDateTime.now(), (long)questionList.size());
         } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON processing error", e);
+        } catch (Exception e) {
+            log.error(e.getMessage());
             throw new RuntimeException(e);
         }
         return vo;
     }
-
-
 
     /**
      * 根据选择的题目判断每种指标所占比例是否合适
@@ -441,4 +468,25 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
         log.info("指标全覆盖且比例正常");
     }
 
+
+    @Override
+    public IPage<TestInfoVO> selectRoughByPage(Long pageNum) {
+
+
+        Page<TestInfo> page = new Page<>(pageNum, 15);
+        IPage<TestInfo> testInfoPage = this.page(page);
+        IPage<TestInfoVO> testInfoVOPage = testInfoPage.convert(customUtil::convertToTestInfoVO);
+        return testInfoVOPage;
+    }
+
+    /**
+     * 根据testId查询某一次测试的详细回答
+     * @param testId
+     * @return
+     */
+    @Override
+    public List<TestExactVO> selectExactByList(Long testId) {
+        List<TestExactVO> resList = testQuestionsMapper.findByTestId(testId);
+        return resList;
+    }
 }

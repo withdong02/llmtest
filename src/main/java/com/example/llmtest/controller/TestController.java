@@ -1,18 +1,18 @@
 package com.example.llmtest.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.llmtest.exceptionhandler.R;
 import com.example.llmtest.pojo.dto.TestDTO;
 import com.example.llmtest.pojo.vo.DataInfoVO;
+import com.example.llmtest.pojo.vo.TestExactVO;
 import com.example.llmtest.pojo.vo.TestResultVO;
+import com.example.llmtest.pojo.vo.TestInfoVO;
 import com.example.llmtest.service.TestService;
 import com.example.llmtest.utils.TestDataGenerator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -47,5 +47,19 @@ public class TestController {
     public R<List<DataInfoVO>> generate(String dimension, String metric, Integer totalQuestions) {
         List<DataInfoVO> list = testDataGenerator.generateData(dimension, metric, totalQuestions);
         return R.success(list);
+    }
+
+    @Operation(summary = "分页查询所有测试信息")
+    @GetMapping("/select")
+    public R<IPage<TestInfoVO>> selectAll(@RequestParam Long pageNum) {
+        IPage<TestInfoVO> vo = testService.selectRoughByPage(pageNum);
+        return R.success(vo);
+    }
+
+    @Operation(summary = "查询一次测试的详细信息")
+    @GetMapping("select/{testId}")
+    public R<List<TestExactVO>> selectExact(@PathVariable Long testId) {
+        List<TestExactVO> vo = testService.selectExactByList(testId);
+        return R.success(vo);
     }
 }

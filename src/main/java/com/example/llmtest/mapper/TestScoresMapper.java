@@ -11,4 +11,6 @@ import java.util.List;
 public interface TestScoresMapper extends BaseMapper<TestScores> {
 
     int insertBatch(List<TestScores> list);
+
+
 }

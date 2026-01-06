@@ -149,7 +149,7 @@ public class DataTransformationServiceImpl extends ServiceImpl<DataInfoMapper, D
             log.info("批量处理{}道题目总耗时: {}分{}秒", dataIds.size(), duration.toMinutes(), duration.getSeconds() % 60);
 
             return resultDataList.stream()
-                    .map(customUtil::convertToVO)
+                    .map(customUtil::convertToDataInfoVO)
                     .collect(Collectors.toList());
         } catch (JsonProcessingException e) {
             throw new RuntimeException("解析算法返回结果失败", e);

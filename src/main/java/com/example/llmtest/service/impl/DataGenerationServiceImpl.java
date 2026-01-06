@@ -134,7 +134,7 @@ public class DataGenerationServiceImpl extends ServiceImpl<DataInfoMapper, DataI
             throw new RuntimeException("解析或保存数据失败", e);
         }
         return returnVal.stream()
-                .map(customUtil::convertToVO)
+                .map(customUtil::convertToDataInfoVO)
                 .collect(Collectors.toList());
     }
 

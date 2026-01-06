@@ -1,24 +1,35 @@
 package com.example.llmtest.utils;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.example.llmtest.mapper.*;
 import com.example.llmtest.pojo.entity.DataInfo;
+import com.example.llmtest.pojo.entity.TestInfo;
+import com.example.llmtest.pojo.entity.TestScores;
 import com.example.llmtest.pojo.vo.DataInfoVO;
+import com.example.llmtest.pojo.vo.TestInfoVO;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Getter
 @Component
 @Slf4j
 public class CustomUtil {
+
+    private final MetricMapper metricMapper;
+    private final SubMetricMapper subMetricMapper;
+    private final TestScoresMapper testScoresMapper;
+    private final TestQuestionsMapper testQuestionsMapper;
+    private final ModelMapper modelMapper;
+
 
     // 维度映射
     private final BiMap<String, String> dimensionMap = HashBiMap.create(Map.of(
@@ -65,7 +76,9 @@ public class CustomUtil {
             "公平性","fairness"
     ));
     // 构造函数中初始化 metricMap
-    public CustomUtil() {
+    public CustomUtil(MetricMapper metricMapper, TestQuestionsMapper testQuestionsMapper,
+                      SubMetricMapper subMetricMapper, TestScoresMapper testScoresMapper,
+                      ModelMapper modelMapper) {
         metricMap.put("系统响应效率", "system_responsiveness");
         metricMap.put("复杂推理能力", "complex_reasoning_skill");
         metricMap.put("长文本理解能力", "long_text_comprehension_skill");
@@ -89,6 +102,12 @@ public class CustomUtil {
         metricMap.put("年龄", "age");
         metricMap.put("宗教", "religion");
         metricMap.put("政治", "politics");
+
+        this.metricMapper = metricMapper;
+        this.subMetricMapper = subMetricMapper;
+        this.testQuestionsMapper = testQuestionsMapper;
+        this.testScoresMapper = testScoresMapper;
+        this.modelMapper = modelMapper;
     }
 
     //字符串转数组
@@ -121,7 +140,7 @@ public class CustomUtil {
      * @param dataInfo
      * @return DataInfoVO
      */
-    public DataInfoVO convertToVO(DataInfo dataInfo) {
+    public DataInfoVO convertToDataInfoVO(DataInfo dataInfo) {
         return DataInfoVO.builder()
                 .dataId(dataInfo.getDataId())
                 .question(dataInfo.getQuestion())
@@ -136,6 +155,7 @@ public class CustomUtil {
                 .originalDataId(dataInfo.getOriginalDataId())
                 .build();
     }
+
 
 /**
  * 根据给定的维度名称获取对应的指标列表
@@ -172,5 +192,37 @@ public class CustomUtil {
     }
 
 
+    /**
+     * 根据指定的testId返回vo，提前设置好metricScores和singleScore
+     * @param testInfo
+     * @return
+     */
+    public TestInfoVO convertToTestInfoVO (TestInfo testInfo) {
+        Map<String, Double> metricScores = new HashMap<>();
+        //flag = true,如果testInfo中metricId不为空，说明测的是性能维度里的复杂和长文本
+        boolean flag = testInfo.getMetricId() != null && testInfo.getMetricId() > 0;
+
+        List<TestScores> scores = testScoresMapper.selectList(
+                new QueryWrapper<TestScores>().eq("test_id", testInfo.getTestId())
+        );
+        List<Double> singleScores = new ArrayList<>();
+        int i = 0;
+        scores.forEach(score -> {
+            if (score.getItemType().equals("metric")) {
+                String name = flag ? subMetricMapper.selectNameById(score.getItemId()) :
+                        metricMapper.selectNameById(score.getItemId());
+                metricScores.put(name, score.getScore());
+            } else if (score.getItemType().equals("question")) {
+                singleScores.add(score.getScore());
+            }
+        });
+        TestInfoVO vo = new TestInfoVO();
+        BeanUtils.copyProperties(testInfo, vo);
+        vo.setModelName(modelMapper.selectNameById(testInfo.getModelId()));
+        vo.setMetricName(metricMapper.selectNameById(testInfo.getMetricId()));
+        vo.setMetricScores(metricScores);
+        vo.setSingleScores(singleScores.toArray(new Double[0]));
+        return vo;
+    }
 }
 

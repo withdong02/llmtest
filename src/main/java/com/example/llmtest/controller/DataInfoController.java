@@ -57,6 +57,4 @@ public class DataInfoController {
             return R.error(ReturnCode.RC404.getCode(), ReturnCode.RC404.getMsg());
         }
     }
-
-
 }
