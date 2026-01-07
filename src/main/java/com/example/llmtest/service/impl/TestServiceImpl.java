@@ -144,7 +144,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
         requestBody.put("qs_list", qsList);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        log.info("发送请求");
+        log.info("test1接口发送请求");
         LocalDateTime startTime = LocalDateTime.now();
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
   
@@ -307,7 +307,7 @@ public class TestServiceImpl extends ServiceImpl<TestInfoMapper, TestInfo> imple
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        log.info("发送请求");
+        log.info("test2接口发送请求");
         LocalDateTime startTime = LocalDateTime.now();
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
 

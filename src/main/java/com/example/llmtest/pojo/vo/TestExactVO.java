@@ -5,7 +5,9 @@ import lombok.Data;
 @Data
 public class TestExactVO {
 
+    private Long dataId;
     private String question;
+    private String options;
     private String answer;
     private String modelOutput;
 

@@ -16,11 +16,13 @@ public interface TestQuestionsMapper extends BaseMapper<TestQuestions> {
 
     int insertBatchWithoutScore(List<TestQuestions> list);
 
-    @Select("SELECT d.question, d.answer, ts.score, tq.model_output " +
+    @Select("SELECT d.data_id, d.question, d.answer, d.options,  tq.model_output, " +
+            "CASE WHEN ts.item_type = 'question' THEN ts.score ELSE NULL END AS score " +
             "FROM test_questions tq " +
-            "JOIN data_info d ON tq.data_id = d.data_id " +
-            "JOIN test_scores ts ON ts.item_id = d.data_id AND ts.test_id = tq.test_id " +
-            "WHERE ts.item_type = 'question' AND tq.test_id = #{testId}")
+            "INNER JOIN data_info d ON tq.data_id = d.data_id " +
+            "LEFT JOIN test_scores ts ON ts.test_id = tq.test_id AND ts.item_id = tq.data_id " +
+            "WHERE tq.test_id = #{testId} " +
+            "ORDER BY tq.data_id")
     List<TestExactVO> findByTestId(@Param("testId") Long testId);
 
 }
